@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2023/12/30 23:32:38 by bsuc             ###   ########.fr       */
+/*   Updated: 2023/12/31 00:27:42 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,22 +110,6 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *pipex)
 	return (0);
 }
 
-// static char *get_redirection(char *line, char redirect)
-// {
-// 	char	*redir_to;
-// 	int		i;
-// 	int		size;
-// 	i = 0;
-// 	while (line[i] != redirect)
-// 		i++;
-// 	if (line[i + 1] == redirect)
-// 		i++;
-// 	size = ft_strlen(line) - i;
-// 	redir_to = ft_substr(line, i+1, size);
-// 	redir_to = ft_strtrim(redir_to, " ");
-// 	return (redir_to);
-// }
-
 static char	**get_cmd(char *line)
 {
 	int		i;
@@ -154,29 +138,17 @@ static char	**get_cmd(char *line)
 static char	*get_file(char *line, int len)
 {
 	int		i;
-	int		j;
 	char	*file;
-
-	i = 0;
-	j = 0;
-	// while(line[++i])
-	// {
-	// 	if (line[i] == '>' && line[i + 1] != '>')
-	// 	{
-	// 		while (line[i] && line[i] != '>' && line[i] != '<' && line[i] != ' ')
-	// 		{
-	// 			j++;
-	// 			i++;
-	// 		}
-	// 		break;
-	// 	}
-	// 	i++;
-	// }
-	// file = ft_calloc(j + 1, sizeof(char));
-
-
-	// while ()
 	
+	i = 0;
+	file = ft_calloc(len + 1, sizeof(char));
+	if (!file)
+		return (NULL);
+	i = -1;
+	while (++i < len)
+		file[i] = line[i];
+	file[i] = 0;
+	return (file);
 }
 
 static int	count_file(char *line)
@@ -186,18 +158,15 @@ static int	count_file(char *line)
 
 	i = 0;
 	count = 0;
-	printf("line ?? .%s.\n", line);
+	line = ft_strtrim(line, " ");
 	while (line[i])
 	{
 		if (line[i] == '>' && line[i + 1] != '>')
-		{
-			printf("je rentre ?? %c.\n", line[i]);
 			count++;
+		if (line[i] == '>' && line[i + 1] == '>')
 			i++;
-		}
 		i++;
 	}
-	printf("nb file %d\n", count);
 	return (count);
 }
 
@@ -212,50 +181,33 @@ static char	**get_redir_out(char *line)
 	files = 0;
 	j = 0;
 	out = ft_strnstr(line, ">", ft_strlen(line));
-	printf("%s\n", out);
-	if (!ft_strnstr(line, ">>", ft_strlen(line)))
-		files = ft_split(line, '>');
-	else
+	i = 0;
+	count = 0;
+	files = ft_calloc(count_file(out) + 1, sizeof(char *));
+	if (!files)
+		return (NULL);
+	while(*out)
 	{
-		i = -1;
-		out = ft_strtrim(out, " ");
-		count = 0;
-		files = ft_calloc(count_file(out) + 1, sizeof(char *));
-		if (!files)
-			return (NULL);
-		while(out[++i])
+		if (*out == '>' && *(out + 1) != '>')
 		{
-			if ((out[i] == '>' || out[i] == ' ') && count != 0)
+			out = ft_strtrim(out, "> ");
+			while (out[i] && out[i] != '>' && out[i] != '<' && out[i] != ' ')
 			{
-				files[j] = get_file(out, count);
-				count = 0;
-				j++;
-			}
-			else
 				count++;
+				i++;
+			}
+			files[j] = get_file(out, count);
+			count = 0;
+			j++;
+			i = 0;
 		}
-		printf("count %d\n", count);
+		if (*out == '>' && *(out + 1) == '>')
+			out++;
+		out++;
 	}
 	files[j] = 0;
-	for(int k = 0; files[k]; k++)
-		printf("%s\n", files[k]);
 	return (files);
 }
-
-// static char	**get_redir_out_end(char *line)
-// {
-// 	char	**files;
-// 	int		i;
-// 	printf("on est la\n");
-// 	while (*line != '>' && *(line + 1) != '>')
-// 		line++;
-// 	printf(".%s.\n", line);
-// 	// files = ft_split(line, '>');
-// 	// i = -1;
-// 	// while (files[++i])
-// 	// 	files[i] = ft_strtrim(files[i], " ");
-// 	return (files);
-// }
 
 static t_cmd	*init_cmd(char *line, char **envp)
 {
@@ -274,17 +226,16 @@ static t_cmd	*init_cmd(char *line, char **envp)
 		printf(".%s.\n", cmd->cmd[i]);
 	cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
 	printf("path_cmd %s\n", cmd->path_cmd);
-	
+
 	if (ft_strnstr(line, ">", ft_strlen(line)))
-	{
 		cmd->redir_out = get_redir_out(line);
-		printf("je seg fault pas ici\n");
-	}
 	// if (ft_strnstr(line, ">>", ft_strlen(line)))
 	// 	// cmd->redir_out_end = get_redir_out_end(line);
 	// if (ft_strchr(line, '<'))
 	// if (ft_strnstr(line, "<<", 2))
-	
+
+	for (int i = 0; cmd->redir_out[i]; i++)
+		printf("redir out : .%s.\n", cmd->redir_out[i]);
 	cmd->next = NULL;
 	return (cmd);
 }
