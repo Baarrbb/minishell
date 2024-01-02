@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/02 22:37:13 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/03 01:31:12 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,7 +196,8 @@ static char	*get_redir(t_redir *cmd, char *line)
 static	void	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 {
 	t_redir	*new;
-	
+	char	*linetrim;
+
 	while (*line)
 	{
 		new = ft_calloc(1, sizeof(t_redir));
@@ -204,21 +205,21 @@ static	void	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 			return ;
 		ft_memset(new, 0, sizeof(t_redir));
 		line = get_redir(new, line);
-		line = ft_strtrim(line, ">< ");
-		line = get_filename(new, line);
+		linetrim = ft_strtrim(line, ">< ");
+		line = get_filename(new, linetrim);
 		new->next = 0;
 		ft_lstadd_back(&redir, new);
 		if (ft_strlen(line) == 0)
 			break;
 	}
 	cmd->redir = redir;
+	free(linetrim);
 }
 
 static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 {
 	t_cmd	*cmd;
 	char	*line_trim;
-	char	*line_trim2;
 
 	cmd = (t_cmd *)malloc(sizeof(t_cmd));
 	if (!cmd)
@@ -229,23 +230,17 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	if (line_trim[ft_strlen(line_trim) - 1] == '&')
 	{
 		cmd->background = 1;
-		line_trim2 = ft_strtrim(line_trim, " &");
-		free(line_trim);
+		line_trim = ft_strtrim(line_trim, " 	&");
 	}
+	if (ft_strchr(line_trim, '<') || ft_strchr(line_trim, '>'))
+		cmd->cmd = get_cmd(line_trim);
 	else
-	{
-		line_trim2 = ft_strdup(line_trim);
-		free(line_trim);
-	}
-	if (ft_strchr(line_trim2, '<') || ft_strchr(line_trim2, '>'))
-		cmd->cmd = get_cmd(line_trim2);
-	else
-		cmd->cmd = ft_split(line_trim2, ' ');
+		cmd->cmd = ft_split(line_trim, ' ');
 	cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
-	if (ft_strnstr(line_trim2, ">", ft_strlen(line_trim2)) || ft_strnstr(line_trim2, "<", ft_strlen(line_trim2)))
-		init_redir(cmd, redir, line_trim2);
+	if (ft_strnstr(line_trim, ">", ft_strlen(line_trim)) || ft_strnstr(line_trim, "<", ft_strlen(line_trim)))
+		init_redir(cmd, redir, line_trim);
 	cmd->next = NULL;
-	free(line_trim2);
+	free(line_trim);
 	return (cmd);
 }
 

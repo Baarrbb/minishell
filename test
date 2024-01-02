@@ -16,3 +16,6 @@ cas : cat | wc -l < test
 
 le infile se refert a la premiere commande
 sortie sur dernier outfile
+
+
+valgrind --suppressions=readline.supp --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./minishell

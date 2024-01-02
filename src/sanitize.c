@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/30 18:33:59 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/02 22:26:02 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/03 00:58:19 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ static void	free_redir(t_redir **redir)
 	while (*redir)
 	{
 		tmp = (*redir)->next;
+		free((*redir)->filename);
 		free(*redir);
 		*redir = tmp;
 	}
