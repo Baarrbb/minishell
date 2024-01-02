@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/02 21:19:08 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/02 22:37:13 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,11 +79,11 @@ static char	**get_path(char **envp)
 			break ;
 		}
 	}
-	// free_path(del_path);
+	free_char_tab(del_path);
 	return (path);
 }
 
-static char	*check_exist_cmd(char *cmd1, t_cmd *pipex)
+static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 {
 	int		i;
 	char	*full_cmd;
@@ -92,21 +92,20 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *pipex)
 	full_cmd = 0;
 	i = -1;
 	wo_param = ft_split (cmd1, ' ');
-	while (pipex->path[++i])
+	while (cmd->path[++i])
 	{
-		full_cmd = strjoin(full_cmd, pipex->path[i]);
+		full_cmd = strjoin(full_cmd, cmd->path[i]);
 		full_cmd = strjoin(full_cmd, "/");
 		full_cmd = strjoin(full_cmd, wo_param[0]);
 		if (access(full_cmd, X_OK) == 0)
 		{
-			// free_path(wo_param);
+			free_char_tab(wo_param);
 			return (full_cmd);
 		}
 		free(full_cmd);
 		full_cmd = 0;
 	}
-	// free_path(wo_param);
-	// handle_error("One of the command doesn't exist", pipex);
+	free_char_tab(wo_param);
 	return (0);
 }
 
@@ -120,7 +119,7 @@ static char	**get_cmd(char *line)
 	i = 0;
 	while (line[i] != '<' && line[i] != '>')
 		i++;
-	cmd = (char *)ft_calloc(i, sizeof(char));
+	cmd = (char *)ft_calloc(i + 1, sizeof(char));
 	if (!cmd)
 		return (NULL);
 	i = 0;
@@ -132,6 +131,7 @@ static char	**get_cmd(char *line)
 	cmd_trim = ft_strtrim(cmd, " ");
 	free(cmd);
 	cmd_args = ft_split(cmd_trim, ' ');
+	free(cmd_trim);
 	return (cmd_args);
 }
 
@@ -155,13 +155,16 @@ static char *get_filename(t_redir *redir, char *line)
 	int		i;
 	int		count;
 	char	*filename;
+	char	*filetrim;
 
 	i = -1;
-	while (file_char(line[i]))
+	count = 0;
+	while (file_char(line[++i]))
 		count++;
-	filename = ft_calloc(count + 1, sizeof(char));
+	filename = malloc((count + 1) * sizeof(char));
 	if (!filename)
 		return (0);
+	filename[count] = '\0';
 	i = 0;
 	while (file_char((int)*line))
 	{
@@ -169,8 +172,9 @@ static char *get_filename(t_redir *redir, char *line)
 		line++;
 		i++;
 	}
-	filename = ft_strtrim(filename, " ");
-	redir->filename = filename;
+	filetrim = ft_strtrim(filename, " ");
+	free(filename);
+	redir->filename = filetrim;
 	return (line);
 }
 
@@ -213,22 +217,35 @@ static	void	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 {
 	t_cmd	*cmd;
+	char	*line_trim;
+	char	*line_trim2;
 
 	cmd = (t_cmd *)malloc(sizeof(t_cmd));
 	if (!cmd)
 		return (NULL);
 	ft_memset(cmd, 0, sizeof(t_cmd));
 	cmd->path = get_path(envp);
-	if (ft_strchr(line, '<') || ft_strchr(line, '>') || ft_strchr(line, '&'))
-		cmd->cmd = get_cmd(line); //gerer le &
+	line_trim = ft_strtrim(line, " 	");
+	if (line_trim[ft_strlen(line_trim) - 1] == '&')
+	{
+		cmd->background = 1;
+		line_trim2 = ft_strtrim(line_trim, " &");
+		free(line_trim);
+	}
 	else
-		cmd->cmd = ft_split(line, ' ');
+	{
+		line_trim2 = ft_strdup(line_trim);
+		free(line_trim);
+	}
+	if (ft_strchr(line_trim2, '<') || ft_strchr(line_trim2, '>'))
+		cmd->cmd = get_cmd(line_trim2);
+	else
+		cmd->cmd = ft_split(line_trim2, ' ');
 	cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
-
-	if (ft_strnstr(line, ">", ft_strlen(line)) || ft_strnstr(line, "<", ft_strlen(line)))
-		init_redir(cmd, redir, line);
-
+	if (ft_strnstr(line_trim2, ">", ft_strlen(line_trim2)) || ft_strnstr(line_trim2, "<", ft_strlen(line_trim2)))
+		init_redir(cmd, redir, line_trim2);
 	cmd->next = NULL;
+	free(line_trim2);
 	return (cmd);
 }
 
@@ -258,7 +275,6 @@ int main(int ac, char **av, char **envp)
 		{
 			cmd = init_cmd(command[i], envp, redir);
 			print_struct(cmd);
-			printf("je seg fault ???\n");
 			// if (!cmd)
 				// free_list(pipe);
 			// pipe = ft_lst_addback()
@@ -266,9 +282,8 @@ int main(int ac, char **av, char **envp)
 		free(line);
 		free_char_tab(command);
 		free_list(&cmd);
-		// free_list(&redir);
 		command = 0;
-		redir = 0;
+		cmd = 0;
 		i = -1;
 	}
 	return (0);
@@ -279,6 +294,7 @@ void	print_redir(t_redir *redir)
 	for (int i = 0; redir; i++)
 	{
 		printf("out %d end %d\n", redir->out, redir->out_end);
+		printf("in %d read %d\n", redir->in, redir->in_read);
 		printf("Filename .%s.\n", redir->filename);
 		redir = redir->next;
 	}
@@ -291,9 +307,14 @@ void	print_struct(t_cmd *cmd)
 	// 	printf("%s\n", cmd->path[i]);
 	// printf("Cmd with args :\n");
 	for(int i = 0; cmd->cmd[i]; i++)
-		printf("%s\n", cmd->cmd[i]);
+	{
+		if (i == 0)
+			printf("cmd : %s\n", cmd->cmd[i]);
+		else
+			printf("args : %s\n", cmd->cmd[i]);
+	}
 	printf("Is that a builtin : %d\n", cmd->builtin);
 	printf("Cmd path : %s\n", cmd->path_cmd);
-	printf("Back ground ? %d \n\n", cmd->background);
+	printf("Background ? %d \n\n", cmd->background);
 	print_redir(cmd->redir);
 }

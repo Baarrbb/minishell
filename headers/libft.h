@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/20 16:39:43 by barb              #+#    #+#             */
-/*   Updated: 2024/01/02 18:47:53 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/02 22:36:05 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,5 +32,6 @@ int		ft_isalpha(int c);
 int		ft_isascii(int c);
 int		ft_isdigit(int c);
 int		ft_isprint(int c);
+char	*ft_strdup(const char *s);
 
 #endif

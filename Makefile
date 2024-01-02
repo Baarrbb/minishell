@@ -6,7 +6,7 @@
 #    By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/29 23:25:19 by bsuc              #+#    #+#              #
-#    Updated: 2024/01/02 20:28:45 by bsuc             ###   ########.fr        #
+#    Updated: 2024/01/02 22:16:08 by bsuc             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,3 +39,6 @@ fclean : clean
 	$(RM) $(NAME)
 
 re : fclean all
+
+val : all
+	valgrind --leak-check=full --track-origins=yes ./minishell
