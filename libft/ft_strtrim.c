@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/19 23:21:17 by barb              #+#    #+#             */
-/*   Updated: 2023/12/30 21:57:08 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/03 02:20:49 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,3 +64,6 @@ char	*ft_strtrim(const char *s1, const char *set)
 	s = ft_substr(s1, i, len);
 	return (s);
 }
+
+
+// cat < test  | grep something > outfile > out2 | wc -l < out2

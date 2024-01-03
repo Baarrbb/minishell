@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/03 01:31:12 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/03 02:35:10 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,18 +48,6 @@ char	*strjoin(char *dst, char *s)
 	res[i] = '\0';
 	free(dst);
 	return (res);
-}
-
-static void	handle_error(char *s, t_cmd *pipex)
-{
-	printf(RED);
-	printf(BOLD);
-	printf("[ERROR]\n");
-	printf(RESET);
-	if (s)
-		printf("%s\n", s);
-	// free_struct(pipex);
-	exit(EXIT_FAILURE);
 }
 
 static char	**get_path(char **envp)
@@ -161,10 +149,9 @@ static char *get_filename(t_redir *redir, char *line)
 	count = 0;
 	while (file_char(line[++i]))
 		count++;
-	filename = malloc((count + 1) * sizeof(char));
+	filename = ft_calloc((count + 1), sizeof(char));
 	if (!filename)
 		return (0);
-	filename[count] = '\0';
 	i = 0;
 	while (file_char((int)*line))
 	{
@@ -175,6 +162,8 @@ static char *get_filename(t_redir *redir, char *line)
 	filetrim = ft_strtrim(filename, " ");
 	free(filename);
 	redir->filename = filetrim;
+	if (*line == 0)
+		return (0);
 	return (line);
 }
 
@@ -197,23 +186,29 @@ static	void	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 {
 	t_redir	*new;
 	char	*linetrim;
+	char	*tmp;
+	int		i;
 
-	while (*line)
+	linetrim = ft_strdup(line);
+	tmp = linetrim;
+	while (*linetrim)
 	{
 		new = ft_calloc(1, sizeof(t_redir));
 		if (!new)
 			return ;
 		ft_memset(new, 0, sizeof(t_redir));
-		line = get_redir(new, line);
-		linetrim = ft_strtrim(line, ">< ");
-		line = get_filename(new, linetrim);
+		linetrim = get_redir(new, linetrim);
+		i = -1;
+		while (linetrim[++i] == ' ' || linetrim[i] == '<' || linetrim[i] == '>')
+			linetrim++;
+		linetrim = get_filename(new, linetrim);
 		new->next = 0;
 		ft_lstadd_back(&redir, new);
-		if (ft_strlen(line) == 0)
+		if (ft_strlen(linetrim) == 0)
 			break;
 	}
 	cmd->redir = redir;
-	free(linetrim);
+	free(tmp);
 }
 
 static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
@@ -249,7 +244,7 @@ int main(int ac, char **av, char **envp)
 	char	*line;
 	char	**command;
 	t_cmd	*cmd;
-	t_cmd	**pipe;
+	t_cmd	*pipe;
 	t_redir	*redir;
 	int		i;
 
@@ -269,14 +264,12 @@ int main(int ac, char **av, char **envp)
 		while (command[++i])
 		{
 			cmd = init_cmd(command[i], envp, redir);
-			print_struct(cmd);
-			// if (!cmd)
-				// free_list(pipe);
-			// pipe = ft_lst_addback()
+			ft_lstadd_back_bis(&pipe, cmd);
 		}
+		print_linked_list(pipe);
 		free(line);
 		free_char_tab(command);
-		free_list(&cmd);
+		free_list(&pipe);
 		command = 0;
 		cmd = 0;
 		i = -1;
@@ -312,4 +305,13 @@ void	print_struct(t_cmd *cmd)
 	printf("Cmd path : %s\n", cmd->path_cmd);
 	printf("Background ? %d \n\n", cmd->background);
 	print_redir(cmd->redir);
+}
+
+void print_linked_list(t_cmd *pipe)
+{
+	for(int i = 0; pipe; i++)
+	{
+		print_struct(pipe);
+		pipe = pipe->next;
+	}
 }

@@ -6,7 +6,7 @@
 #    By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/29 23:25:19 by bsuc              #+#    #+#              #
-#    Updated: 2024/01/02 22:16:08 by bsuc             ###   ########.fr        #
+#    Updated: 2024/01/03 01:45:17 by bsuc             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ OBJ = $(SRC:.c=.o)
 NAME = minishell
 RM = rm -f
 CC = cc
-CFLAGS = -Wall -Wextra #-Werror
+CFLAGS = -Wall -Wextra -g #-Werror
 LIBFT = libft/libft.a
 INC = -I./headers
 
