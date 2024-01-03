@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/30 18:33:59 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/03 02:38:19 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/03 17:40:12 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,10 @@ void	free_list(t_cmd **list)
 
 	while (*list)
 	{
-		free_char_tab((*list)->path);
-		free_char_tab((*list)->cmd);
+		if ((*list)->path)
+			free_char_tab((*list)->path);
+		if ((*list)->cmd)
+			free_char_tab((*list)->cmd);
 		free_redir(&((*list)->redir));
 		free((*list)->path_cmd);
 		tmp = (*list)->next;

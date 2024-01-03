@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/03 02:44:57 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/03 17:40:57 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ static char	**get_path(char **envp)
 
 	i = -1;
 	path = 0;
+	del_path = 0;
 	while (envp[++i])
 	{
 		if (!ft_strncmp(envp[i], "PATH", 4))
@@ -215,29 +216,37 @@ static	void	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 {
 	t_cmd	*cmd;
-	char	*line_trim;
 	int		len;
 
 	cmd = (t_cmd *)ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
 		return (NULL);
 	ft_memset(cmd, 0, sizeof(t_cmd));
-	cmd->path = get_path(envp);
-	line_trim = ft_strtrim(line, " 	");
-	if (line_trim[ft_strlen(line_trim) - 1] == '&')
+	if (envp != 0)
 	{
-		cmd->background = 1;
-		line_trim = ft_strtrim(line_trim, " 	&");
+		cmd->path = get_path(envp);
+		if (ft_strchr(line, '<') || ft_strchr(line, '>'))
+			cmd->cmd = get_cmd(line);
+		else
+			cmd->cmd = ft_split(line, ' ');
+		cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
 	}
-	if (ft_strchr(line_trim, '<') || ft_strchr(line_trim, '>'))
-		cmd->cmd = get_cmd(line_trim);
+	len = ft_strlen(line);
+	if (ft_strnstr(line, ">", len) || ft_strnstr(line, "<", len))
+		init_redir(cmd, redir, line);
+	return (cmd);
+}
+
+static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **envp)
+{
+	char	*linetrim;
+
+	linetrim = ft_strtrim(line, " 	");
+	if (linetrim[0] == '>' || linetrim[0] == '<')
+		cmd = init_cmd(linetrim, 0, redir);
 	else
-		cmd->cmd = ft_split(line_trim, ' ');
-	cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
-	len = ft_strlen(line_trim);
-	if (ft_strnstr(line_trim, ">", len) || ft_strnstr(line_trim, "<", len))
-		init_redir(cmd, redir, line_trim);
-	free(line_trim);
+		cmd = init_cmd(linetrim, envp, redir);
+	free(linetrim);
 	return (cmd);
 }
 
@@ -265,10 +274,10 @@ int	main(int ac, char **av, char **envp)
 		command = ft_split(line, '|');
 		while (command[++i])
 		{
-			cmd = init_cmd(command[i], envp, redir);
+			cmd = check_grammar_line(redir, cmd, command[i], envp);
 			ft_lstadd_back_bis(&pipe, cmd);
 		}
-		// print_linked_list(pipe);
+		print_linked_list(pipe);
 		free(line);
 		free_char_tab(command);
 		free_list(&pipe);
@@ -279,7 +288,7 @@ int	main(int ac, char **av, char **envp)
 	return (0);
 }
 
-/*
+
 void	print_redir(t_redir *redir)
 {
 	for (int i = 0; redir; i++)
@@ -297,16 +306,20 @@ void	print_struct(t_cmd *cmd)
 	// for(int i = 0; cmd->path[i]; i++)
 	// 	printf("%s\n", cmd->path[i]);
 	// printf("Cmd with args :\n");
-	for(int i = 0; cmd->cmd[i]; i++)
+	if (cmd->cmd)
 	{
-		if (i == 0)
-			printf("cmd : %s\n", cmd->cmd[i]);
-		else
-			printf("args : %s\n", cmd->cmd[i]);
+		for(int i = 0; cmd->cmd[i]; i++)
+		{
+			if (i == 0)
+				printf("cmd : %s\n", cmd->cmd[i]);
+			else
+				printf("args : %s\n", cmd->cmd[i]);
+		}
 	}
+	else
+		printf("cmd->cmd : (null)\n");
 	printf("Is that a builtin : %d\n", cmd->builtin);
 	printf("Cmd path : %s\n", cmd->path_cmd);
-	printf("Background ? %d \n\n", cmd->background);
 	print_redir(cmd->redir);
 }
 
@@ -318,4 +331,3 @@ void	print_linked_list(t_cmd *pipe)
 		pipe = pipe->next;
 	}
 }
-*/
