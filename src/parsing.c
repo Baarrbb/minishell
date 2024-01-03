@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/03 02:35:10 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/03 02:44:57 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,9 +124,10 @@ static char	**get_cmd(char *line)
 }
 
 //tous les caracteres speciaux sauf space tab et /
-static int is_spe_char(int c)
+static int	is_spe_char(int c)
 {
-	if (c == '>' || c == '<' || c == '$' || c == '\'' || c == '\"' || c == '|')
+	if (c == '>' || c == '<' || c == '$' || c == '\'' || c == '\"'
+		|| c == '|')
 		return (1);
 	return (0);
 }
@@ -138,7 +139,7 @@ static int	file_char(int c)
 	return (0);
 }
 
-static char *get_filename(t_redir *redir, char *line)
+static char	*get_filename(t_redir *redir, char *line)
 {
 	int		i;
 	int		count;
@@ -205,7 +206,7 @@ static	void	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 		new->next = 0;
 		ft_lstadd_back(&redir, new);
 		if (ft_strlen(linetrim) == 0)
-			break;
+			break ;
 	}
 	cmd->redir = redir;
 	free(tmp);
@@ -215,8 +216,9 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 {
 	t_cmd	*cmd;
 	char	*line_trim;
+	int		len;
 
-	cmd = (t_cmd *)malloc(sizeof(t_cmd));
+	cmd = (t_cmd *)ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
 		return (NULL);
 	ft_memset(cmd, 0, sizeof(t_cmd));
@@ -232,14 +234,14 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	else
 		cmd->cmd = ft_split(line_trim, ' ');
 	cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
-	if (ft_strnstr(line_trim, ">", ft_strlen(line_trim)) || ft_strnstr(line_trim, "<", ft_strlen(line_trim)))
+	len = ft_strlen(line_trim);
+	if (ft_strnstr(line_trim, ">", len) || ft_strnstr(line_trim, "<", len))
 		init_redir(cmd, redir, line_trim);
-	cmd->next = NULL;
 	free(line_trim);
 	return (cmd);
 }
 
-int main(int ac, char **av, char **envp)
+int	main(int ac, char **av, char **envp)
 {
 	char	*line;
 	char	**command;
@@ -266,7 +268,7 @@ int main(int ac, char **av, char **envp)
 			cmd = init_cmd(command[i], envp, redir);
 			ft_lstadd_back_bis(&pipe, cmd);
 		}
-		print_linked_list(pipe);
+		// print_linked_list(pipe);
 		free(line);
 		free_char_tab(command);
 		free_list(&pipe);
@@ -277,6 +279,7 @@ int main(int ac, char **av, char **envp)
 	return (0);
 }
 
+/*
 void	print_redir(t_redir *redir)
 {
 	for (int i = 0; redir; i++)
@@ -307,7 +310,7 @@ void	print_struct(t_cmd *cmd)
 	print_redir(cmd->redir);
 }
 
-void print_linked_list(t_cmd *pipe)
+void	print_linked_list(t_cmd *pipe)
 {
 	for(int i = 0; pipe; i++)
 	{
@@ -315,3 +318,4 @@ void print_linked_list(t_cmd *pipe)
 		pipe = pipe->next;
 	}
 }
+*/
