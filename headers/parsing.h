@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/03 16:59:56 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/04 17:18:01 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 # define BOLD "\x1b[1m"
 # define RED "\x1b[31m"
 # define RESET "\x1b[0m"
+# define ERROR_MSG "bash: syntax error near unexpected token "
 
 typedef struct s_redir
 {
@@ -35,6 +36,7 @@ typedef struct s_redir
 
 typedef struct s_cmd
 {
+	char			**env_ms;
 	char			**path;
 	char			**cmd;
 	int				builtin;

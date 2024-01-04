@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/03 17:40:57 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/04 20:11:18 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,8 @@ static char	**get_cmd(char *line)
 //tous les caracteres speciaux sauf space tab et /
 static int	is_spe_char(int c)
 {
-	if (c == '>' || c == '<' || c == '$' || c == '\'' || c == '\"'
+	// ajouter  c == '$' ????
+	if (c == '>' || c == '<' || c == '\'' || c == '\"'
 		|| c == '|')
 		return (1);
 	return (0);
@@ -138,6 +139,24 @@ static int	file_char(int c)
 	if (ft_isprint(c) && !is_spe_char(c))
 		return (1);
 	return (0);
+}
+
+static void	error_syntax(char *line)
+{
+	char *token;
+
+	token = 0;
+	if (line[0] == 0)
+		token = "newline";
+	else if (line[0] == '>' && line[1] == '>')
+		token = ">>";
+	else if (line[0] == '<' && line[1] == '<')
+		token = "<<";
+	else if (line[0] == '>')
+		token = ">";
+	else if (line[0] == '<')
+		token = "<";
+	printf("%s`%s\'\n", ERROR_MSG, token);
 }
 
 static char	*get_filename(t_redir *redir, char *line)
@@ -151,6 +170,11 @@ static char	*get_filename(t_redir *redir, char *line)
 	count = 0;
 	while (file_char(line[++i]))
 		count++;
+	if (count == 0)
+	{
+		error_syntax(line);
+		return (0);
+	}
 	filename = ft_calloc((count + 1), sizeof(char));
 	if (!filename)
 		return (0);
@@ -173,6 +197,11 @@ static char	*get_redir(t_redir *cmd, char *line)
 {
 	while (*line && *line != '<' && *line != '>')
 		line++;
+	if (*line == '<' && *(line + 1) == '>')
+	{
+		printf("%s`newline\'\n", ERROR_MSG);
+		return (0);
+	}
 	if (*line == '>' && *(line + 1) != '>')
 		cmd->out = 1;
 	else if (*line == '>' && *(line + 1) == '>')
@@ -184,7 +213,7 @@ static char	*get_redir(t_redir *cmd, char *line)
 	return (line);
 }
 
-static	void	init_redir(t_cmd *cmd, t_redir *redir, char *line)
+static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 {
 	t_redir	*new;
 	char	*linetrim;
@@ -193,17 +222,25 @@ static	void	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 
 	linetrim = ft_strdup(line);
 	tmp = linetrim;
+	i = -1;
 	while (*linetrim)
 	{
 		new = ft_calloc(1, sizeof(t_redir));
 		if (!new)
-			return ;
+			return (0);
 		ft_memset(new, 0, sizeof(t_redir));
 		linetrim = get_redir(new, linetrim);
-		i = -1;
-		while (linetrim[++i] == ' ' || linetrim[i] == '<' || linetrim[i] == '>')
+		if (!linetrim)
+			return (0);
+		if (new->out || new->in)
+			linetrim++;
+		else if (new->out_end || new->in_read)
+			linetrim += 2;
+		while (linetrim && linetrim[++i] == ' ')
 			linetrim++;
 		linetrim = get_filename(new, linetrim);
+		if (!new->filename)
+			return (0);
 		new->next = 0;
 		ft_lstadd_back(&redir, new);
 		if (ft_strlen(linetrim) == 0)
@@ -211,6 +248,7 @@ static	void	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 	}
 	cmd->redir = redir;
 	free(tmp);
+	return (1);
 }
 
 static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
@@ -233,7 +271,8 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	}
 	len = ft_strlen(line);
 	if (ft_strnstr(line, ">", len) || ft_strnstr(line, "<", len))
-		init_redir(cmd, redir, line);
+		if (!init_redir(cmd, redir, line))
+			return (0);
 	return (cmd);
 }
 
@@ -242,6 +281,11 @@ static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **
 	char	*linetrim;
 
 	linetrim = ft_strtrim(line, " 	");
+	if (ft_strlen(linetrim) == 0)
+	{
+		free(linetrim);
+		return (0);
+	}
 	if (linetrim[0] == '>' || linetrim[0] == '<')
 		cmd = init_cmd(linetrim, 0, redir);
 	else
@@ -269,13 +313,19 @@ int	main(int ac, char **av, char **envp)
 	{
 		line = readline("Minishell $ ");
 		rl_on_new_line();
-		if (line[0] != ' ')
+		if (line[0] != ' ' && line[0] != 0)
 			add_history(line);
 		command = ft_split(line, '|');
 		while (command[++i])
 		{
 			cmd = check_grammar_line(redir, cmd, command[i], envp);
-			ft_lstadd_back_bis(&pipe, cmd);
+			if (cmd)
+				ft_lstadd_back_bis(&pipe, cmd);
+			else
+			{
+				free_list(&pipe);
+				break;
+			}
 		}
 		print_linked_list(pipe);
 		free(line);
@@ -306,18 +356,21 @@ void	print_struct(t_cmd *cmd)
 	// for(int i = 0; cmd->path[i]; i++)
 	// 	printf("%s\n", cmd->path[i]);
 	// printf("Cmd with args :\n");
+	// printf("ENV : \n");
+	// for (int i = 0; cmd->env_ms[i]; i++)
+	// 	printf("%s\n", cmd->env_ms[i]);
 	if (cmd->cmd)
 	{
 		for(int i = 0; cmd->cmd[i]; i++)
 		{
 			if (i == 0)
-				printf("cmd : %s\n", cmd->cmd[i]);
+				printf("\ncmd : %s\n", cmd->cmd[i]);
 			else
 				printf("args : %s\n", cmd->cmd[i]);
 		}
 	}
 	else
-		printf("cmd->cmd : (null)\n");
+		printf("\ncmd->cmd : (null)\n");
 	printf("Is that a builtin : %d\n", cmd->builtin);
 	printf("Cmd path : %s\n", cmd->path_cmd);
 	print_redir(cmd->redir);
