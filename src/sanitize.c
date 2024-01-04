@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/30 18:33:59 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/04 19:53:01 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/04 20:18:49 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,17 @@ static void	free_redir(t_redir **redir)
 		*redir = tmp;
 	}
 	*redir = 0;
+}
+
+void	free_struct(t_cmd *cmd)
+{
+	if (cmd->path)
+		free_char_tab(cmd->path);
+	if (cmd->cmd)
+		free_char_tab(cmd->cmd);
+	free_redir(&(cmd->redir));
+	free(cmd->path_cmd);
+	free(cmd);
 }
 
 void	free_list(t_cmd **list)

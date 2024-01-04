@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/04 20:11:18 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/04 20:22:40 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,7 +231,11 @@ static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 		ft_memset(new, 0, sizeof(t_redir));
 		linetrim = get_redir(new, linetrim);
 		if (!linetrim)
+		{
+			free(new);
+			free(tmp);
 			return (0);
+		}
 		if (new->out || new->in)
 			linetrim++;
 		else if (new->out_end || new->in_read)
@@ -240,7 +244,11 @@ static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 			linetrim++;
 		linetrim = get_filename(new, linetrim);
 		if (!new->filename)
+		{
+			free(new);
+			free(tmp);
 			return (0);
+		}
 		new->next = 0;
 		ft_lstadd_back(&redir, new);
 		if (ft_strlen(linetrim) == 0)
@@ -258,7 +266,7 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 
 	cmd = (t_cmd *)ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
-		return (NULL);
+		return (0);
 	ft_memset(cmd, 0, sizeof(t_cmd));
 	if (envp != 0)
 	{
@@ -272,7 +280,10 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	len = ft_strlen(line);
 	if (ft_strnstr(line, ">", len) || ft_strnstr(line, "<", len))
 		if (!init_redir(cmd, redir, line))
+		{
+			free_struct(cmd);
 			return (0);
+		}
 	return (cmd);
 }
 
