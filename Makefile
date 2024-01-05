@@ -3,14 +3,14 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+         #
+#    By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/29 23:25:19 by bsuc              #+#    #+#              #
-#    Updated: 2024/01/03 01:45:17 by bsuc             ###   ########.fr        #
+#    Updated: 2024/01/04 19:16:37 by ytouihar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRC = src/parsing.c src/sanitize.c  src/manage_list.c
+SRC = src/parsing.c src/sanitize.c  src/manage_list.c src/execute.c src/checks_comms.c
 OBJ = $(SRC:.c=.o)
 NAME = minishell
 RM = rm -f

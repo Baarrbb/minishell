@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/03 02:44:57 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/05 15:01:09 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ static char	**get_path(char **envp)
 	int		i;
 
 	i = -1;
+	del_path = 0;
 	path = 0;
 	while (envp[++i])
 	{
@@ -234,7 +235,7 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	else
 		cmd->cmd = ft_split(line_trim, ' ');
 	cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
-	len = ft_strlen(line_trim);
+	len = ft_strlen(line_trim);	
 	if (ft_strnstr(line_trim, ">", len) || ft_strnstr(line_trim, "<", len))
 		init_redir(cmd, redir, line_trim);
 	free(line_trim);
@@ -268,7 +269,9 @@ int	main(int ac, char **av, char **envp)
 			cmd = init_cmd(command[i], envp, redir);
 			ft_lstadd_back_bis(&pipe, cmd);
 		}
-		// print_linked_list(pipe);
+		//check_commands(pipe, envp);
+		execute_test(pipe, envp);
+		print_linked_list(pipe);
 		free(line);
 		free_char_tab(command);
 		free_list(&pipe);
@@ -279,7 +282,7 @@ int	main(int ac, char **av, char **envp)
 	return (0);
 }
 
-/*
+
 void	print_redir(t_redir *redir)
 {
 	for (int i = 0; redir; i++)
@@ -318,4 +321,3 @@ void	print_linked_list(t_cmd *pipe)
 		pipe = pipe->next;
 	}
 }
-*/

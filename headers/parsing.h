@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/03 01:40:32 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/05 12:07:56 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,5 +53,7 @@ void	ft_lstadd_back_bis(t_cmd **lst, t_cmd *new);
 void	print_struct(t_cmd *cmd);
 void	print_redir(t_redir *redir);
 void	print_linked_list(t_cmd *pipe);
+void	execute_test(const t_cmd *pipe, char **envp);
+int		check_commands(t_cmd *commands);
 
 #endif
