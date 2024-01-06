@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/06 19:14:31 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/06 22:42:23 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,31 +102,58 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 
 static int	check_quote(char *line)
 {
-	int	i;
-	int	sg_quote;
-	int	db_quote;
-
-	i = -1;
-	sg_quote = 0;
-	db_quote = 0;
-	while (line[++i])
+	while (*line != '\'' && *line != '\"' && *line)
+		line++;
+	if (*line == '\'')
 	{
-		if (line[i] == '\'')
-			sg_quote++;
-		if (line[i] == '\"')
-			db_quote++;
+		line++;
+		while (*line != '\'' && *line)
+			line++;
+		if (*line == 0)
+			return (0);
 	}
-	if (sg_quote % 2 || db_quote % 2)
-		return (0);
+	else if (*line == '\"')
+	{
+		line++;
+		while (*line != '\"' && *line)
+			line++;
+		if (*line == 0)
+			return (0);
+	}
 	return (1);
+}
+
+static char	**all_args_w_quote(char **tmp, char **quote)
+{
+	int		i;
+	int		j;
+	char	**cmd;
+
+	i = 0;
+	j = 1;
+	while (tmp[i])
+		i++;
+	while (quote[j])
+		j++;
+	cmd = ft_calloc(i + j + 1, sizeof(char *));
+	if (!cmd)
+		return (0);
+	i = -1;
+	while (tmp[++i])
+		cmd[i] = ft_strdup(tmp[i]);
+	j = -1;
+	while (quote[++j])
+		cmd[i++] = ft_strdup(quote[j]);
+	return (cmd);
 }
 
 static char	**get_cmd(char *line)
 {
-	char	**cmd;
 	char	**tmp;
+	char	**quote;
+	int		i;
+	char	*line_wo_quote;
 
-	cmd = 0;
 	tmp = 0;
 	printf("line : %s\n", line);
 	if (!ft_strchr(line, '\'') && !ft_strchr(line, '\"'))
@@ -136,14 +163,19 @@ static char	**get_cmd(char *line)
 		else
 			return (ft_split(line, ' '));
 	}
-	if (ft_strchr(line, '\''))
-		tmp = ft_split(line, '\'');
-	else if (ft_strchr(line, '\"'))
-		tmp = ft_split(line, '\"');
-	
-	for(int i = 0; cmd[i]; i++)
-		printf("%s\n", cmd[i]);
-	return (0);
+	else
+	{
+		i = 0;
+		while (line[i] != '\'' && line[i] != '\"')
+			i++;
+		line_wo_quote = ft_substr(line, 0, i - 1);
+		tmp = ft_split(line_wo_quote, ' ');
+		if (line[i] == '\'')
+			quote = ft_split(line + i, '\'');
+		else if (line[i] == '\"')
+			quote = ft_split(line + i, '\"');
+		return (all_args_w_quote(tmp, quote));
+	}
 }
 
 static char	**get_cmd_w_redir(char *line)
