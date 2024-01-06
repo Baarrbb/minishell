@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/05 19:41:48 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/06 19:14:31 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,9 +270,9 @@ static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 
 	linetrim = ft_strdup(line);
 	tmp = linetrim;
-	i = -1;
 	while (*linetrim)
 	{
+		i = -1;
 		new = ft_calloc(1, sizeof(t_redir));
 		if (!new)
 			return (0);
@@ -288,7 +288,7 @@ static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 			linetrim++;
 		else if (new->out_end || new->in_read)
 			linetrim += 2;
-		while (linetrim && linetrim[++i] == ' ')
+		while (linetrim[++i] == ' ' && *linetrim)
 			linetrim++;
 		linetrim = get_filename(new, linetrim);
 		if (!new->filename)
