@@ -11,10 +11,6 @@ cat < test  | grep something > outfile > out2 | wc -l < out2
 /usr/bin/ls -al | grep M
 < test | grep 01
 
-
-check doublon dans nom file ??
-check les leaks ---- ON EST BON ??
-et norminette ---- ON EST BON JSUTE ORGA FICHIER
 gerer si c'est directement un path qui est donne
 si $ < test
 si $ > out
@@ -33,9 +29,7 @@ space, tab, newline
 Single quote -> ne pas intrepreter les meta
 Double quote -> same sauf pour $
 
-
 valgrind --suppressions=readline.supp --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./minishell
-
 
 COMMANDES POSSIBLES :
 
@@ -48,16 +42,12 @@ ls > out1
 > out1
 > ls    --> ca creer un fichier ls
 
-
 POURQUOI CA CA MARCHE ??
 < out1 > cat ls >out4
 < out1 > cat touch out5
 
-
-
-
 POUR LES QUOTES AU LIEU DE SPLIT SUR LES QUOTES ON PEUT 
-AVANCER TANT QUE ON A PAS LA DERNIERE (SACHANAT QU"ON A VERIFIE AVANT SI DOUBLE OU PAS)
+AVANCER TANT QUE ON A PAS LA DERNIERE (SACHNAT QU"ON A VERIFIE AVANT SI DOUBLE OU PAS)
 (SACHANT QUE POSITION = DERNIERE LETTRE D'UN MOT)
 
 A FAIRE 
