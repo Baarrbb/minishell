@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/06 23:54:27 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/07 23:14:10 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -371,10 +371,6 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	if (envp != 0)
 	{
 		cmd->path = get_path(envp);
-		// if (ft_strchr(line, '<') || ft_strchr(line, '>'))
-		// 	cmd->cmd = get_cmd(line);
-		// else
-		// 	cmd->cmd = ft_split(line, ' ');
 		cmd->cmd = get_cmd(line);
 		cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
 		is_builtin(cmd);
@@ -402,6 +398,15 @@ static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **
 		free(linetrim);
 		return (0);
 	}
+	if (linetrim[0] == '&')
+	{
+		if (linetrim[1] == '&')
+			printf("%s `%s\'\n", ERROR_MSG, "&&");
+		else
+			printf("%s `%s\'\n", ERROR_MSG, "&");
+		free(linetrim);
+		return (0);
+	}
 	if (!check_quote(line))
 	{
 		printf("bash: syntax error quote expected\n");
@@ -416,127 +421,18 @@ static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **
 	return (cmd);
 }
 
-static int	is_redir(char *line)
+static int	count_pipe(char *line)
 {
-	if (line[0] == '>' && line[1] != '>')
-		return (1);
-	if (line[0] == '>' && line[1] == '>')
-		return (2);
-	if (line[0] == '<' && line[1] != '<')
-		return (3);
-	if (line[0] == '<' && line[1] == '<')
-		return (4);
-	return(0);
-}
+	int	count;
 
-static int check_filename(char *line)
-{
-	int		i;
-
-	i = 0;
-	while (file_char(line[i]))
-		i++;
-	return (i);
-}
-
-static int	check_cmd_args(char	*line)
-{
-	int	i;
-
-	i = 0;
-	if (!check_quote(line))
+	count = 0;
+	while (*line)
 	{
-		printf("bash: syntax error quote expected\n");
-		return (-1);
+		if (*line == '|')
+			count++;
+		line++;
 	}
-	else
-	{
-		if (ft_strchr(line, '\'') || ft_strchr(line, '\"'))
-		{
-			while (line[i] != '>' && line[i] != '<' && line[i] != '|' &&
-				line[i] != '\'' && line[i])
-		}
-		else
-		{
-			while (line[i] != '>' && line[i] != '<' && line[i] != '|' && line[i])
-				i++;
-			return (i);
-		}
-	}
-	return (0);
-}
-
-static int	first_check_gramamr(char *line)
-{
-	char	*linetrim;
-	char	*tmp;
-	int		redir;
-	int		filename;
-	int		cmd;
-	int		pipe;
-
-	linetrim = ft_strtrim(line, " 	");
-	tmp = linetrim;
-	if (linetrim[0] == '|' || linetrim[0] == '&' || linetrim[0] == ';')
-		return (0);
-	pipe = 1;
-	redir = is_redir(linetrim);
-	cmd = check_cmd_args(linetrim);
-	while (pipe)
-	{
-		while (redir)
-		{
-			if (redir == 2 || redir == 4)
-				linetrim += 2;
-			else if (redir == 1 || redir == 3)
-				linetrim++;
-			linetrim = ft_strtrim(linetrim, " 	");
-			filename = check_filename(linetrim);
-			if(!filename)
-			{
-				free(tmp);
-				return (0);
-			}
-			else
-				linetrim += filename;
-			linetrim = ft_strtrim(linetrim, " 	");
-			redir = is_redir(linetrim);
-		}
-		cmd = check_cmd_args(linetrim);
-		if (cmd == -1)
-		{
-			free(tmp);
-			return (0);
-		}
-		if (cmd)
-		{
-			linetrim += cmd;
-			linetrim = ft_strtrim(linetrim, " 	");
-		}
-		redir = is_redir(linetrim);
-		while (redir)
-		{
-			if (redir == 2 || redir == 4)
-				linetrim += 2;
-			else if (redir == 1 || redir == 3)
-				linetrim++;
-			linetrim = ft_strtrim(linetrim, " 	");
-			filename = check_filename(linetrim);
-			if(!filename)
-			{
-				free(tmp);
-				return (0);
-			}
-			else
-				linetrim += filename;
-			linetrim = ft_strtrim(linetrim, " 	");
-			redir = is_redir(linetrim);
-		}
-		if (linetrim[0] != '|')
-			pipe = 0;
-	}
-	free(tmp);
-	return (1);
+	return (count);
 }
 
 int	main(int ac, char **av, char **envp)
@@ -547,6 +443,7 @@ int	main(int ac, char **av, char **envp)
 	t_cmd	*pipe;
 	t_redir	*redir;
 	int		i;
+	int		yesh_pipe;
 
 	(void)ac;
 	(void)av;
@@ -560,6 +457,7 @@ int	main(int ac, char **av, char **envp)
 		rl_on_new_line();
 		if (line[0] != ' ' && line[0] != 0)
 			add_history(line);
+		yesh_pipe = count_pipe(line);
 		command = ft_split(line, '|');
 		while (command[++i])
 		{
@@ -572,6 +470,8 @@ int	main(int ac, char **av, char **envp)
 				break;
 			}
 		}
+		if (yesh_pipe && i <= yesh_pipe + 1)
+			printf("%s `%s\'\n", ERROR_MSG, "|");
 		print_linked_list(pipe);
 		free(line);
 		free_char_tab(command);

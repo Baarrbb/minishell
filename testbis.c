@@ -117,74 +117,67 @@ static int	check_cmd_args(char	*line)
 	return (i);
 }
 
+static char *trim_space(char *line)
+{
+	while (line && (*line == ' ' || *line == '	'))
+		line++;
+	return (line);
+}
+
 static char	*check_redir(char *line)
 {
-	char	*tmp;
-	char	*trim;
 	int		redir;
 	int		filename;
 
-	trim = ft_strtrim(line, " 	");
-	tmp = trim;
+	line = trim_space(line);
 	redir = is_redir(line);
 	while (redir)
 	{
 		if (redir == 2 || redir == 4)
-			trim += 2;
+			line += 2;
 		else if (redir == 1 || redir == 3)
-			trim++;
-		trim = ft_strtrim(trim, " 	");
-		filename = check_filename(trim);
+			line++;
+		line = trim_space(line);
+		filename = check_filename(line);
 		if (!filename)
-		{
-			free(tmp);
 			return (0);
-		}
 		else
-			trim += filename;
-		trim = ft_strtrim(trim, " 	");
-		redir = is_redir(trim);
+			line += filename;
+		line = trim_space(line);
+		redir = is_redir(line);
 	}
-	free(tmp);
-	return (trim);
-}
-
-static int	return_grammar(char *line, int ret)
-{
-	free(line);
-	return (ret);
+	return (line);
 }
 
 static int	first_check_grammar(char *line)
 {
-	char	*linetrim;
-	char	*tmp;
 	int		cmd;
 
-	linetrim = ft_strtrim(line, " 	");
-	tmp = linetrim;
-	if (!linetrim || linetrim[0] == 0 || linetrim[0] == '|'
-		|| linetrim[0] == '&' || linetrim[0] == ';')
-		return (return_grammar(tmp, 1));
-	while (*linetrim)
+	line = trim_space(line);
+	if (!line || line[0] == 0 || line[0] == '|'
+		|| line[0] == '&' || line[0] == ';')
+		return (0);
+	while (*line)
 	{
-		linetrim = check_redir(linetrim);
-		cmd = check_cmd_args(linetrim);
+		line = check_redir(line);
+		cmd = check_cmd_args(line);
 		if (!cmd || cmd == -1)
-			return (return_grammar(tmp, 0));
-		linetrim += cmd;
-		linetrim = ft_strtrim(linetrim, " 	");
-		linetrim = check_redir(linetrim);
-		linetrim = ft_strtrim(linetrim, " 	");
-		if (!linetrim || (linetrim[0] == '|' && ft_strlen(linetrim) == 1))
-			return (return_grammar(tmp, 0));
-		if (linetrim[0] == '|')
+			return (0);
+		line += cmd;
+		line = trim_space(line);
+		line = check_redir(line);
+		line = trim_space(line);
+		if (!line)
+			return (0);
+		if (line[0] == '|')
 		{
-			linetrim++;
-			linetrim = ft_strtrim(linetrim, " 	");
+			line++;
+			line = trim_space(line);
+			if (!line || !line[0])
+				return (0);
 		}
 	}
-	return (return_grammar(tmp, 1));
+	return (1);
 }
 
 int	main(void)

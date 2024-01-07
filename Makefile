@@ -6,7 +6,7 @@
 #    By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/29 23:25:19 by bsuc              #+#    #+#              #
-#    Updated: 2024/01/07 00:06:45 by bsuc             ###   ########.fr        #
+#    Updated: 2024/01/07 17:01:45 by bsuc             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,7 +44,7 @@ val : all
 	valgrind --leak-check=full --track-origins=yes ./minishell
 
 obj_test :
-	$(CC) $(CFLAGS) $(INC) -c test.c -o test.o
+	$(CC) $(CFLAGS) $(INC) -c testbis.c -o test.o
 
 test : start obj_test
 	$(CC) $(CFLAGS) test.o $(LIBFT) -lreadline

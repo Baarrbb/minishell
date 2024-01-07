@@ -6,6 +6,8 @@ cat test >> out3 > out1 > out2
 cat < test >> out3 > out1 > out2
 cat < test > out1 > out2 >> out3
 
+cat < test  | grep something > outfile > out2 | wc -l < out2
+
 /usr/bin/ls -al | grep M
 < test | grep 01
 
@@ -60,3 +62,10 @@ AVANCER TANT QUE ON A PAS LA DERNIERE (SACHANAT QU"ON A VERIFIE AVANT SI DOUBLE 
 
 A FAIRE 
 NE PAS OUBLIER DE RECUOP VAR ENV
+
+
+GERER 
+>>|<<
+echo hola > > bonjour
+echo hola < < bonjour
+cat >> > >> << >>
