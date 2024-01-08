@@ -6,11 +6,17 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/30 18:33:59 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/04 20:18:49 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/08 16:23:08 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parsing.h"
+
+int	return_free(char *tofree, int ret)
+{
+	free(tofree);
+	return (ret);
+}
 
 void	free_char_tab(char **tab)
 {

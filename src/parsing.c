@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/07 23:14:10 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/08 16:48:19 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,21 +104,27 @@ static int	check_quote(char *line)
 {
 	while (*line != '\'' && *line != '\"' && *line)
 		line++;
-	if (*line == '\'')
+	while (*line)
 	{
-		line++;
-		while (*line != '\'' && *line)
+		if (*line == '\'')
+		{
 			line++;
-		if (*line == 0)
-			return (0);
-	}
-	else if (*line == '\"')
-	{
-		line++;
-		while (*line != '\"' && *line)
+			while (*line != '\'' && *line)
+				line++;
+			if (*line == 0)
+				return (0);
+		}
+		else if (*line == '\"')
+		{
 			line++;
-		if (*line == 0)
-			return (0);
+			while (*line != '\"' && *line)
+				line++;
+			if (*line == 0)
+				return (0);
+		}
+		line++;
+		while (*line != '\'' && *line != '\"' && *line)
+			line++;
 	}
 	return (1);
 }
@@ -155,7 +161,7 @@ static char	**get_cmd(char *line)
 	char	*line_wo_quote;
 
 	tmp = 0;
-	printf("line : %s\n", line);
+	quote = 0;
 	if (!ft_strchr(line, '\'') && !ft_strchr(line, '\"'))
 	{
 		if (ft_strchr(line, '<') || ft_strchr(line, '>'))
@@ -470,12 +476,20 @@ int	main(int ac, char **av, char **envp)
 				break;
 			}
 		}
-		if (yesh_pipe && i <= yesh_pipe + 1)
+		if (yesh_pipe && i < yesh_pipe + 1)
+		{
 			printf("%s `%s\'\n", ERROR_MSG, "|");
-		print_linked_list(pipe);
-		free(line);
-		free_char_tab(command);
-		free_list(&pipe);
+			free(line);
+			free_char_tab(command);
+			free_list(&pipe);
+		}
+		else
+		{
+			print_linked_list(pipe);
+			free(line);
+			free_char_tab(command);
+			free_list(&pipe);
+		}
 		command = 0;
 		cmd = 0;
 		i = -1;

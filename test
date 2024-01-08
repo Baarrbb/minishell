@@ -59,3 +59,9 @@ GERER
 echo hola > > bonjour
 echo hola < < bonjour
 cat >> > >> << >>
+
+
+biiltin moi :
+cd 
+export 
+env 

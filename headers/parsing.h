@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/05 18:57:12 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/08 16:23:20 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,8 @@ void	free_list(t_cmd **list);
 void	ft_lstadd_back(t_redir **lst, t_redir *new);
 void	ft_lstadd_back_bis(t_cmd **lst, t_cmd *new);
 void	free_struct(t_cmd *cmd);
+int		return_free(char *tofree, int ret);
+
 
 /*  TO REMOVE */
 void	print_struct(t_cmd *cmd);
