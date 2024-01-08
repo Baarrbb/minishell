@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/05 12:07:56 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/05 19:14:55 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,13 @@
 # define BOLD "\x1b[1m"
 # define RED "\x1b[31m"
 # define RESET "\x1b[0m"
+
+typedef struct t_structenv
+{
+	char				*var;
+	char				*invar;
+	struct t_structenv	*next;
+}	t_structenv;
 
 typedef struct s_redir
 {

@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/05 15:07:49 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/08 11:51:49 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,6 @@ void execute_test(const t_cmd *pipes, char **envp)
 	int i;
 	pid_t pid;
 	int pipefds[2*numPipes];
-	int opens;
 
 	i = 0;
 	//creation pipes

@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/05 15:01:09 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/05 18:39:54 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -269,7 +269,7 @@ int	main(int ac, char **av, char **envp)
 			cmd = init_cmd(command[i], envp, redir);
 			ft_lstadd_back_bis(&pipe, cmd);
 		}
-		//check_commands(pipe, envp);
+		check_commands(pipe);
 		execute_test(pipe, envp);
 		print_linked_list(pipe);
 		free(line);
