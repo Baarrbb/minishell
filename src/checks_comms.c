@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/04 19:15:32 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/08 11:45:37 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/08 15:24:42 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,48 +66,58 @@ int	isntaletter(char t)
 	return (0);
 }
 
-void	add_to(char *command, char *tested)
+char	*add_to(char *command, char *tested, int w)
 {
-	int i = 0;
-	char *yes;
-	yes = malloc(ft_strlen(command) + ft_strlen(tested) + 1 * sizeof(char));
+	int		i;
+	int		j;
+	int		l;
+	char	*yes;
+
+	yes = malloc(ft_strlen(command) + w + 1 * sizeof(char));
+	i = 0;
 	while (command[i] != '$')
 	{
 		yes[i] = command[i];
 		i++;
 	}
-	while (isntaletter(command[i]))
-		i++;
-	
+	j = i;
+	i = i + w;
+	l = 0;
+	while (tested[l])
+		yes[j++] = tested[l++];
+	while (command[i])
+		yes[j++] = command[i++];
+	yes[j] = 0;
+	free(command);
+	return (yes);
 }
 
-void	is_a_variable(t_structenv *minienv)
+void	is_a_variable(t_cmd *testons)
 {
-	char	*test;
-	char	*found;
+	char	**found;
 	char	*tested;
 	char	*test2;
 	int		i;
 
-	test = "ys $9HOMEd!";
-	i = 1;
-	found = strchr(test, '$');
-	while (found[i])
+	i = 0;
+	int j = 0;
+	int l = 0;
+	while (testons->cmd[j])
 	{
-		if (isntaletter(found[i]) == 0)
-			break ;
-		i++;
-	}
-	test2 = ft_substr(found, 1, i - 1);
-	tested = getenv(test2);
-	if (tested == NULL)
-	{
-		while (minienv)
+		l = 0;
+		i = 0;
+		found = ft_split(testons->cmd[j], '$');
+		while (found[l])
 		{
-			if (ft_strncmp(minienv->var), test2, ft_strlen(minienv->var) == 0)
-				tested = minienv->invar;
+			while (found[l][i] && isntaletter(found[l][i]) == 1)
+				i++;
+			test2 = ft_substr(found[l], 0, i);
+			tested = getenv(test2);
+			if (getenv(test2) != NULL)
+				testons->cmd[j] = add_to(testons->cmd[j], getenv(test2), ft_strlen(tested));
+			free(test2);
+			l++;
 		}
+		j++;
 	}
-	printf("%s\n", tested);
-	add_to(command, tested, i);
 }

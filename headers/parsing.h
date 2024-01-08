@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/05 19:14:55 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/08 12:40:28 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,6 @@
 # define BOLD "\x1b[1m"
 # define RED "\x1b[31m"
 # define RESET "\x1b[0m"
-
-typedef struct t_structenv
-{
-	char				*var;
-	char				*invar;
-	struct t_structenv	*next;
-}	t_structenv;
 
 typedef struct s_redir
 {
@@ -60,7 +53,10 @@ void	ft_lstadd_back_bis(t_cmd **lst, t_cmd *new);
 void	print_struct(t_cmd *cmd);
 void	print_redir(t_redir *redir);
 void	print_linked_list(t_cmd *pipe);
+/*test*/
 void	execute_test(const t_cmd *pipe, char **envp);
 int		check_commands(t_cmd *commands);
+void	is_a_variable(t_cmd *testons);
+
 
 #endif
