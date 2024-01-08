@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/08 16:48:19 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/08 20:47:47 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,23 @@ char	*strjoin(char *dst, char *s)
 	res[i] = '\0';
 	free(dst);
 	return (res);
+}
+
+static char **copy_env(char **envp)
+{
+	int		i;
+	char	**cpy_env;
+
+	i = 0;
+	while (envp[i])
+		i++;
+	cpy_env = ft_calloc(i + 1, sizeof(char *));
+	if (!cpy_env)
+		return (0);
+	i = -1;
+	while (envp[++i])
+		cpy_env[i] = ft_strdup(envp[i]);
+	return (cpy_env);
 }
 
 static char	**get_path(char **envp)
@@ -153,6 +170,34 @@ static char	**all_args_w_quote(char **tmp, char **quote)
 	return (cmd);
 }
 
+
+//."jdhfkjsdhfkjdh" sdjkjdhfk 'djkfh  ksjdfh' "jkdhfj kdh" dfsdf 'kdjlkdf  sd'.
+// 6 args
+
+// static char	**args_w_quote(char *line_quote)
+// {
+// 	int		i;
+// 	int		count;
+// 	char	*trim;
+// 	char	*tmp;
+
+// 	i = 1;
+// 	count = 0;
+// 	trim = ft_strtrim(line_quote, " 	");
+// 	tmp = trim;
+// 	while (*trim)
+// 	{
+// 		if (*trim == '\"')
+// 		{
+// 			while (*trim != '\"')
+// 				trim++;
+// 			count++;
+// 			if (*trim)
+				
+// 		}
+// 	}
+// }
+
 static char	**get_cmd(char *line)
 {
 	char	**tmp;
@@ -176,10 +221,13 @@ static char	**get_cmd(char *line)
 			i++;
 		line_wo_quote = ft_substr(line, 0, i - 1);
 		tmp = ft_split(line_wo_quote, ' ');
+		printf("line quote : .%s.\n", line + i);
 		if (line[i] == '\'')
 			quote = ft_split(line + i, '\'');
 		else if (line[i] == '\"')
 			quote = ft_split(line + i, '\"');
+		for(int i = 0; quote[i]; i++)
+			printf(".%s.\n", quote[i]);
 		return (all_args_w_quote(tmp, quote));
 	}
 }
@@ -450,6 +498,7 @@ int	main(int ac, char **av, char **envp)
 	t_redir	*redir;
 	int		i;
 	int		yesh_pipe;
+	char	**cpy_env;
 
 	(void)ac;
 	(void)av;
@@ -457,6 +506,7 @@ int	main(int ac, char **av, char **envp)
 	pipe = 0;
 	cmd = 0;
 	redir = 0;
+	cpy_env = copy_env(envp);
 	while (1)
 	{
 		line = readline("Minishell $ ");
@@ -467,7 +517,7 @@ int	main(int ac, char **av, char **envp)
 		command = ft_split(line, '|');
 		while (command[++i])
 		{
-			cmd = check_grammar_line(redir, cmd, command[i], envp);
+			cmd = check_grammar_line(redir, cmd, command[i], cpy_env);
 			if (cmd)
 				ft_lstadd_back_bis(&pipe, cmd);
 			else
@@ -514,9 +564,6 @@ void	print_struct(t_cmd *cmd)
 	// for(int i = 0; cmd->path[i]; i++)
 	// 	printf("%s\n", cmd->path[i]);
 	// printf("Cmd with args :\n");
-	// printf("ENV : \n");
-	// for (int i = 0; cmd->env_ms[i]; i++)
-	// 	printf("%s\n", cmd->env_ms[i]);
 	if (cmd->cmd)
 	{
 		for(int i = 0; cmd->cmd[i]; i++)
