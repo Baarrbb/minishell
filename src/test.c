@@ -24,3 +24,9 @@ int main()
 	}
 	return 0;
 }
+
+
+for (int i = 0; i < 2000; i++)
+{
+	open()
+}

@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/04 19:15:32 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/08 15:24:42 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/09 12:24:23 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,30 +66,47 @@ int	isntaletter(char t)
 	return (0);
 }
 
-char	*add_to(char *command, char *tested, int w)
+char	*add_to(char *command, char *envs, int w)
 {
 	int		i;
 	int		j;
 	int		l;
-	char	*yes;
+	char	*newstr;
 
-	yes = malloc(ft_strlen(command) + w + 1 * sizeof(char));
+	newstr = malloc(ft_strlen(command) + w + 1 * sizeof(char));
+	if (newstr == NULL)
+		return (0);
 	i = 0;
 	while (command[i] != '$')
 	{
-		yes[i] = command[i];
+		newstr[i] = command[i];
 		i++;
 	}
 	j = i;
 	i = i + w;
 	l = 0;
-	while (tested[l])
-		yes[j++] = tested[l++];
+	while (envs[l])
+		newstr[j++] = envs[l++];
 	while (command[i])
-		yes[j++] = command[i++];
-	yes[j] = 0;
+		newstr[j++] = command[i++];
+	newstr[j] = 0;
 	free(command);
-	return (yes);
+	return (newstr);
+}
+
+char *get_ourenv(char **ourenv, char* tofind)
+{
+	int	i;
+
+	i = 0;
+	while (ourenv[i])
+	{
+		if (ft_strncmp(ourenv[i], tofind, ft_strlen(tofind)))
+			if (copy_env[i][ft_strlen(cmds[j])] == '=')
+				return (copyenv[i]);
+		i++;
+	}
+	return (NULL);
 }
 
 void	is_a_variable(t_cmd *testons)
@@ -102,22 +119,80 @@ void	is_a_variable(t_cmd *testons)
 	i = 0;
 	int j = 0;
 	int l = 0;
-	while (testons->cmd[j])
+	while (testons)
 	{
-		l = 0;
-		i = 0;
-		found = ft_split(testons->cmd[j], '$');
-		while (found[l])
+		j = 0;
+		while (testons->cmd[j])
 		{
-			while (found[l][i] && isntaletter(found[l][i]) == 1)
-				i++;
-			test2 = ft_substr(found[l], 0, i);
-			tested = getenv(test2);
-			if (getenv(test2) != NULL)
-				testons->cmd[j] = add_to(testons->cmd[j], getenv(test2), ft_strlen(tested));
-			free(test2);
-			l++;
+			l = 0;
+			i = 0;
+			if (testons->quote_cmd[j] != 1)
+			{
+				found = ft_split(testons->cmd[j], '$');
+				while (found[l])
+				{
+					while (found[l][i])
+					{
+						if (isntaletter(found[l][i]) == 0)
+							break ;
+						i++;
+					}
+					test2 = ft_substr(found[l], 0, i);
+					tested = get_ourenv(test2);
+					if (tested != NULL)
+						testons->cmd[j] = add_to(testons->cmd[j], tested, ft_strlen(tested));
+					free(test2);
+					l++;
+				}
+				free_char_tab(found);
+				j++;
+			}
 		}
-		j++;
+		testons = testons->next;
+	}
+}
+
+char	*remove_quotes(char *str)
+{
+	char	*newstr;
+	int		i;
+
+	i = 0;
+	newstr = malloc((ft_strlen(str) - 1) * sizeof(char));
+	if (newstr == NULL)
+		return (0);
+	while (str[i + 2])
+	{
+		newstr[i] = str[i + 1];	
+		i++;
+	}
+	free(str);
+	newstr[i] = '\0';
+	return (newstr);
+}
+void	handle_quoting(t_cmd *quoting)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	j = 0;
+	quoting->
+	quoting->quote_cmd = malloc(quoting->cmd * sizeof(int));
+	while (quoting->cmd[i])
+	{
+		if (quoting->cmd[i][0] == '\'')
+		{
+			quoting->quote_cmd[i] = remove_quotes(quoting->quote_cmd[i]);
+			quoting->quote_cmd[i] = 1;
+		}
+		else if (quoting->cmd[i][0] == '\"')
+		{
+			quoting->quote_cmd[i] = remove_quotes(quoting->quote_cmd[i]);
+			quoting->quote_cmd[i] = 2;
+		}
+		else
+			quoting->quote_cmd[i] = 0;
+		i++;
 	}
 }

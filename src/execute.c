@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/08 11:51:49 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/09 12:22:04 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,16 +129,16 @@ void	execute_test(const t_cmd *pipes, char **envp)
 }
 */
 
-int	countPipes(t_cmd *ssstruct)
+int	count_struct(t_cmd *list)
 {
 	int	i;
 
 	i = 0;
-	if (ssstruct == NULL)
+	if (list == NULL)
 		return (0);
-	while (ssstruct)
+	while (list)
 	{
-		ssstruct = ssstruct->next;
+		list = list->next;
 		i++;
 	}
 	return (i);
@@ -147,7 +147,7 @@ int	countPipes(t_cmd *ssstruct)
 void execute_test(const t_cmd *pipes, char **envp) 
 {
 	t_cmd *command = (t_cmd *)pipes;
-	int numPipes = countPipes(command);
+	int numPipes = count_struct(command);
 	int status;
 	int i;
 	pid_t pid;

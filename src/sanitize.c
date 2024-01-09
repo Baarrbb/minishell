@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   sanitize.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/30 18:33:59 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/03 02:38:19 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/08 15:53:24 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,19 +36,35 @@ static void	free_redir(t_redir **redir)
 	*redir = 0;
 }
 
+void	free_struct(t_cmd *cmd)
+{
+	if (cmd->path)
+		free_char_tab(cmd->path);
+	if (cmd->cmd)
+		free_char_tab(cmd->cmd);
+	free_redir(&(cmd->redir));
+	free(cmd->path_cmd);
+	free(cmd);
+}
+
 void	free_list(t_cmd **list)
 {
 	t_cmd	*tmp;
 
-	while (*list)
+	if (list)
 	{
-		free_char_tab((*list)->path);
-		free_char_tab((*list)->cmd);
-		free_redir(&((*list)->redir));
-		free((*list)->path_cmd);
-		tmp = (*list)->next;
-		free(*list);
-		*list = tmp;
+		while (*list)
+		{
+			if ((*list)->path)
+				free_char_tab((*list)->path);
+			if ((*list)->cmd)
+				free_char_tab((*list)->cmd);
+			free_redir(&((*list)->redir));
+			free((*list)->path_cmd);
+			tmp = (*list)->next;
+			free(*list);
+			*list = tmp;
+		}
+		*list = 0;
 	}
-	*list = 0;
 }
