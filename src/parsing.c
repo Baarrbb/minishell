@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/09 19:53:58 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/09 20:16:43 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,8 +270,14 @@ static char	**args_w_quote(char *line_quote)
 	char	**quote;
 	int		nb_args;
 	char	**good_quote;
+	int		i;
 
 	quote = ft_split(line_quote, ' ');
+	i = -1;
+	while (quote[i])
+		i++;
+	if (i == 1)
+		return (quote);
 	nb_args = get_nb_args(quote);
 	good_quote = get_args_w_quote(nb_args, line_quote);
 	free_char_tab(quote);

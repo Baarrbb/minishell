@@ -94,7 +94,6 @@ static int	get_nb_args(char **quote)
 	return (count);
 }
 
-
 static char	**get_args_w_quote(char **quote, int nb_args, char *line_quote)
 {
 	char	**good_quote;
@@ -149,16 +148,23 @@ static char	**args_w_quote(char *line_quote)
 	char	**quote;
 	int		nb_args;
 	char	**good_quote;
+	int		i;
 
 	quote = ft_split(line_quote, ' ');
+	i = -1;
+	while (quote[i])
+		i++;
+	if (i == 1)
+		return (quote);
 	nb_args = get_nb_args(quote);
+	printf("klsd %d\n", nb_args);
 	good_quote = get_args_w_quote(quote, nb_args, line_quote);
 	return (good_quote);
 }
 
 int main()
 {
-	char **quote = args_w_quote("  \"jdhfkjsdhfkjdh\" sdjkjdhfk \'djkfh  ksjdfh\' \"jkdhfj kdh\" dfsdf \'kdjlkdf  sd\'  ");
+	char **quote = args_w_quote("\"val1\",\"val2\"p");
 	for(int i = 0; quote[i]; i++)
 		printf(".%s.\n", quote[i]);
 }
