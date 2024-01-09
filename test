@@ -1,6 +1,7 @@
 0123456789
 
-cat test > out1 > out2 >> out3
+cat test^C[?2004l
+ut2 >> out3
 cat test >> out3 > out1 > out2
 
 cat < test >> out3 > out1 > out2
@@ -65,3 +66,6 @@ biiltin moi :
 cd 
 export 
 env 
+
+
+echo "jdhfkjsdhfkjdh" sdjkjdhfk 'djkfh  ksjdfh' "jkdhfj kdh" dfsdf 'kdjlkdf  sd' > test

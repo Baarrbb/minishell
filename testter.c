@@ -7,108 +7,158 @@
 # include <string.h>
 # include <stdio.h>
 # include <errno.h>
+# include "libft.h"
 
-static int	count_words(char *s, char c)
+static char	*dst_null(char	*dst)
 {
-	int	count;
+	dst = (char *)malloc(1 * sizeof(char));
+	if (!dst)
+		return (NULL);
+	dst[0] = '\0';
+	return (dst);
+}
+
+char	*strjoin(char *dst, char *s)
+{
+	char	*res;
+	int		i;
+	int		j;
+
+	if (!s)
+		return (NULL);
+	if (!dst)
+		dst = dst_null(dst);
+	res = (char *)malloc((ft_strlen(s) + ft_strlen(dst) + 1) * sizeof(char));
+	if (!res)
+	{
+		free(dst);
+		return (NULL);
+	}
+	i = -1;
+	j = -1;
+	while (dst[++i])
+		res[i] = dst[i];
+	while (s[++j])
+		res[i++] = s[j];
+	res[i] = '\0';
+	free(dst);
+	return (res);
+}
+
+
+void	free_char_tab(char **tab)
+{
 	int	i;
 
+	i = -1;
+	while (tab[++i])
+		free(tab[i]);
+	free(tab);
+}
+
+static int	get_nb_args(char **quote)
+{
+	int	i;
+	int	last_pos;
+	int	count;
+
+	i = -1;
 	count = 0;
-	i = 0;
-	while (s[i])
+	while (quote[++i])
 	{
-		while (s[i] == c && s[i])
-			i++;
-		if (s[i] != c && s[i])
-		{
+		last_pos = ft_strlen(quote[i]) - 1;
+		if ((quote[i][0] == '\"' && quote[i][last_pos] == '\"')
+			|| (quote[i][0] == '\'' && quote[i][last_pos] == '\''))
 			count++;
-			i++;
+		else if (quote[i][0] == '\"')
+		{
+			while (quote[i][last_pos] != '\"')
+			{
+				i++;
+				last_pos = ft_strlen(quote[i]) - 1;
+			}
+			count++;
 		}
-		while (s[i] != c && s[i])
-			i++;
+		else if (quote[i][0] == '\'')
+		{
+			while (quote[i][last_pos] != '\'')
+			{
+				i++;
+				last_pos = ft_strlen(quote[i]) - 1;
+			}
+			count++;
+		}
+		else
+			count++;
 	}
 	return (count);
 }
 
-static char	**malloc_free(char	**tab)
-{
-	int	i;
 
-	i = 0;
-	while (tab[i])
-	{
-		free(tab[i]);
-		i++;
-	}
-	free(tab);
-	return (NULL);
-}
-
-static char	*malloc_word(char *s, char c)
+static char	**get_args_w_quote(char **quote, int nb_args, char *line_quote)
 {
+	char	**good_quote;
 	int		i;
 	int		j;
-	char	*word;
+	char	*trim;
+	char	*tmp;
 
-	i = 0;
+
 	j = 0;
-	while (s[i] != c && s[i])
-		i++;
-	word = (char *)malloc((i + 1) * sizeof(char));
-	if (!word)
-		return (NULL);
-	while (j < i)
+	good_quote = ft_calloc(nb_args + 1, sizeof(char *));
+	trim = ft_strtrim(line_quote, " 	");
+	tmp = trim;
+	while (*trim)
 	{
-		word[j++] = (char)*s++;
-	}
-	word[j] = '\0';
-	return (word);
-}
-
-static char	**insert_words(char **words, char *s, char c)
-{
-	int	i;
-
-	i = 0;
-	while (*s)
-	{
-		while (*s && (char)*s == c)
-			s++;
-		if (*s && (char)*s != c)
+		i = 0;
+		if (*trim == '\"')
 		{
-			words[i] = malloc_word(s, c);
-			if (!words[i])
-				return (malloc_free(words));
 			i++;
+			while (trim[i] != '\"')
+				i++;
+			good_quote[j] = ft_substr(trim, 0, i + 1);
+			trim += i + 1;
+			trim = ft_strtrim(trim, " 	");
 		}
-		while (*s && (char)*s != c)
-			s++;
+		else if (*trim == '\'')
+		{
+			i++;
+			while (trim[i] != '\'')
+				i++;
+			good_quote[j] = ft_substr(trim, 0, i + 1);
+			trim += i + 1;
+			trim = ft_strtrim(trim, " 	");
+		}
+		else
+		{
+			while (*trim == ' ')
+				trim++;
+			while (trim[i] != ' ')
+				i++;
+			good_quote[j] = ft_substr(trim, 0, i);
+			trim += i + 1;
+		}
+		j++;
 	}
-	words[i] = NULL;
-	return (words);
+	free(tmp);
+	return (good_quote);
 }
 
-char	**ft_split(const char *s, char c)
+static char	**args_w_quote(char *line_quote)
 {
-	int		count;
-	char	**split;
+	char	**quote;
+	int		nb_args;
+	char	**good_quote;
 
-	if (!s)
-		return (NULL);
-	count = count_words((char *)s, c);
-	split = (char **)malloc((count + 1) * sizeof(char *));
-	if (!split)
-		return (NULL);
-	split = insert_words(split, (char *)s, c);
-	return (split);
+	quote = ft_split(line_quote, ' ');
+	nb_args = get_nb_args(quote);
+	good_quote = get_args_w_quote(quote, nb_args, line_quote);
+	return (good_quote);
 }
 
-
-int main(int ac, char **av, char **env)
+int main()
 {
-	char **cmd = ft_split("grep -E  test", ' ');
-	for(int i = 0; cmd[i]; i++)
-		printf(".%s.\n", cmd[i]);
-	execve("/usr/bin/grep", cmd, env);
-
+	char **quote = args_w_quote("  \"jdhfkjsdhfkjdh\" sdjkjdhfk \'djkfh  ksjdfh\' \"jkdhfj kdh\" dfsdf \'kdjlkdf  sd\'  ");
+	for(int i = 0; quote[i]; i++)
+		printf(".%s.\n", quote[i]);
 }

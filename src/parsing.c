@@ -6,13 +6,11 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/08 20:47:47 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/09 19:53:58 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parsing.h"
-
-// cat < test  | grep something > outfile > out2 | wc -l < out2
 
 static char	**get_cmd_w_redir(char *line);
 
@@ -50,6 +48,13 @@ char	*strjoin(char *dst, char *s)
 	res[i] = '\0';
 	free(dst);
 	return (res);
+}
+
+char	*trim_space(char *line)
+{
+	while (*line == ' ' || *line == '	')
+		line++;
+	return (line);
 }
 
 static char **copy_env(char **envp)
@@ -167,36 +172,111 @@ static char	**all_args_w_quote(char **tmp, char **quote)
 	j = -1;
 	while (quote[++j])
 		cmd[i++] = ft_strdup(quote[j]);
+	free_char_tab(tmp);
+	free_char_tab(quote);
 	return (cmd);
 }
 
+static int	get_nb_args(char **quote)
+{
+	int	i;
+	int	last_pos;
+	int	count;
 
-//."jdhfkjsdhfkjdh" sdjkjdhfk 'djkfh  ksjdfh' "jkdhfj kdh" dfsdf 'kdjlkdf  sd'.
-// 6 args
+	i = -1;
+	count = 0;
+	while (quote[++i])
+	{
+		last_pos = ft_strlen(quote[i]) - 1;
+		if ((quote[i][0] == '\"' && quote[i][last_pos] == '\"')
+			|| (quote[i][0] == '\'' && quote[i][last_pos] == '\''))
+			count++;
+		else if (quote[i][0] == '\"')
+		{
+			while (quote[i][last_pos] != '\"')
+			{
+				i++;
+				last_pos = ft_strlen(quote[i]) - 1;
+			}
+			count++;
+		}
+		else if (quote[i][0] == '\'')
+		{
+			while (quote[i][last_pos] != '\'')
+			{
+				i++;
+				last_pos = ft_strlen(quote[i]) - 1;
+			}
+			count++;
+		}
+		else
+			count++;
+	}
+	return (count);
+}
 
-// static char	**args_w_quote(char *line_quote)
-// {
-// 	int		i;
-// 	int		count;
-// 	char	*trim;
-// 	char	*tmp;
+static char	**get_args_w_quote(int nb_args, char *line_quote)
+{
+	char	**good_quote;
+	int		i;
+	int		j;
+	char	*trim;
+	char	*tmp;
 
-// 	i = 1;
-// 	count = 0;
-// 	trim = ft_strtrim(line_quote, " 	");
-// 	tmp = trim;
-// 	while (*trim)
-// 	{
-// 		if (*trim == '\"')
-// 		{
-// 			while (*trim != '\"')
-// 				trim++;
-// 			count++;
-// 			if (*trim)
-				
-// 		}
-// 	}
-// }
+	j = 0;
+	good_quote = ft_calloc(nb_args + 1, sizeof(char *));
+	trim = ft_strtrim(line_quote, " 	");
+	tmp = trim;
+	while (*trim)
+	{
+		i = 0;
+		if (*trim == '\"')
+		{
+			i++;
+			while (trim[i] != '\"')
+				i++;
+			good_quote[j] = ft_substr(trim, 0, i + 1);
+			trim += i + 1;
+			trim = trim_space(trim);
+		}
+		else if (*trim == '\'')
+		{
+			i++;
+			while (trim[i] != '\'')
+				i++;
+			good_quote[j] = ft_substr(trim, 0, i + 1);
+			trim += i + 1;
+			trim = trim_space(trim);
+		}
+		else
+		{
+			while (*trim == ' ')
+				trim++;
+			if (*trim == '>' || *trim == '<')
+				break;
+			while (trim[i] != ' ')
+				i++;
+			good_quote[j] = ft_substr(trim, 0, i);
+			trim += i + 1;
+		}
+		j++;
+	}
+	free(tmp);
+	return (good_quote);
+}
+
+static char	**args_w_quote(char *line_quote)
+{
+	char	**quote;
+	int		nb_args;
+	char	**good_quote;
+
+	quote = ft_split(line_quote, ' ');
+	nb_args = get_nb_args(quote);
+	good_quote = get_args_w_quote(nb_args, line_quote);
+	free_char_tab(quote);
+	return (good_quote);
+}
 
 static char	**get_cmd(char *line)
 {
@@ -221,14 +301,10 @@ static char	**get_cmd(char *line)
 			i++;
 		line_wo_quote = ft_substr(line, 0, i - 1);
 		tmp = ft_split(line_wo_quote, ' ');
-		printf("line quote : .%s.\n", line + i);
-		if (line[i] == '\'')
-			quote = ft_split(line + i, '\'');
-		else if (line[i] == '\"')
-			quote = ft_split(line + i, '\"');
-		for(int i = 0; quote[i]; i++)
-			printf(".%s.\n", quote[i]);
-		return (all_args_w_quote(tmp, quote));
+		quote = args_w_quote(line + i);
+		free(line_wo_quote);
+		char **good_quote = all_args_w_quote(tmp, quote);
+		return (good_quote);
 	}
 }
 
@@ -441,7 +517,6 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	return (cmd);
 }
 
-//rename check_first_cmd
 static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **envp)
 {
 	char	*linetrim;
@@ -569,9 +644,9 @@ void	print_struct(t_cmd *cmd)
 		for(int i = 0; cmd->cmd[i]; i++)
 		{
 			if (i == 0)
-				printf("\ncmd : %s\n", cmd->cmd[i]);
+				printf("\ncmd : .%s.\n", cmd->cmd[i]);
 			else
-				printf("args : %s\n", cmd->cmd[i]);
+				printf("args : .%s.\n", cmd->cmd[i]);
 		}
 	}
 	else
