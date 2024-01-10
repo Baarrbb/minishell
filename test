@@ -72,3 +72,12 @@ echo "jdhfkjsdhfkjdh" sdjkjdhfk 'djkfh  ksjdfh' "jkdhfj kdh" dfsdf 'kdjlkdf  sd'
 
 
 cat /etc/passwd | cut -d: -f1 | sed -n '2~2p' | rev | sort -r | sed -n "$FT_LINE1","$FT_LINE2"p | tr '\n' ',' | sed -n 's/,/, /gp' | sed -n 's/, $/./p' | tr -d '\n'
+
+gerer < out cat
+gerer redirection avant commande
+
+
+< out cat > lsdkfjlkj | kd
+cat test | ls
+
+ls > cat > cat > catdsadas < out1

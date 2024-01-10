@@ -78,6 +78,11 @@ static int	get_nb_args(char **quote)
 				printf("qui] .%s.\n", quote[i]);
 				i++;
 				printf("qui++] .%s.\n", quote[i]);
+				if (!quote[i])
+				{
+					printf("av ret %d\n", count);
+					return (count += 1);
+				}
 				if (quote[i] != 0)
 				{
 					printf("je ne rentre pas\n");
@@ -86,6 +91,7 @@ static int	get_nb_args(char **quote)
 			}
 			printf("seg %d??\n", i);
 			count++;
+			printf("count %d\n", count);
 		}
 		else if (quote[i][0] == '\'')
 		{

@@ -6,13 +6,15 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/09 20:16:43 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/10 20:43:28 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parsing.h"
 
 static char	**get_cmd_w_redir(char *line);
+static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir);
+static	void	fill_cmd(t_cmd *cmd, char *line, char **envp);
 
 static char	*dst_null(char	*dst)
 {
@@ -52,8 +54,13 @@ char	*strjoin(char *dst, char *s)
 
 char	*trim_space(char *line)
 {
-	while (*line == ' ' || *line == '	')
-		line++;
+	printf("trim_pace\n");
+	if (line)
+	{
+		while (*line == ' ' || *line == '	')
+			line++;
+	}
+	printf("DANS TRIM_SPACE\n");
 	return (line);
 }
 
@@ -76,6 +83,7 @@ static char **copy_env(char **envp)
 
 static char	**get_path(char **envp)
 {
+	printf("get path\n");
 	char	**path;
 	char	**del_path;
 	int		i;
@@ -98,6 +106,7 @@ static char	**get_path(char **envp)
 
 static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 {
+	printf("check_exist_cmd\n");
 	int		i;
 	char	*full_cmd;
 	char	**wo_param;
@@ -124,6 +133,7 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 
 static int	check_quote(char *line)
 {
+	printf("check_quote\n");
 	while (*line != '\'' && *line != '\"' && *line)
 		line++;
 	while (*line)
@@ -153,6 +163,7 @@ static int	check_quote(char *line)
 
 static char	**all_args_w_quote(char **tmp, char **quote)
 {
+	printf("all_args_w_quote\n");
 	int		i;
 	int		j;
 	char	**cmd;
@@ -179,6 +190,7 @@ static char	**all_args_w_quote(char **tmp, char **quote)
 
 static int	get_nb_args(char **quote)
 {
+	printf("get_nb_args\n");
 	int	i;
 	int	last_pos;
 	int	count;
@@ -217,6 +229,7 @@ static int	get_nb_args(char **quote)
 
 static char	**get_args_w_quote(int nb_args, char *line_quote)
 {
+	printf("get_args_w_quote\n");
 	char	**good_quote;
 	int		i;
 	int		j;
@@ -267,6 +280,7 @@ static char	**get_args_w_quote(int nb_args, char *line_quote)
 
 static char	**args_w_quote(char *line_quote)
 {
+	printf("args_w_quote\n");
 	char	**quote;
 	int		nb_args;
 	char	**good_quote;
@@ -286,6 +300,7 @@ static char	**args_w_quote(char *line_quote)
 
 static char	**get_cmd(char *line)
 {
+	printf("get_cmd\n");
 	char	**tmp;
 	char	**quote;
 	int		i;
@@ -316,6 +331,7 @@ static char	**get_cmd(char *line)
 
 static char	**get_cmd_w_redir(char *line)
 {
+	printf("get_cmd_w_redir\n");
 	int		i;
 	char	*cmd;
 	char	*cmd_trim;
@@ -343,6 +359,7 @@ static char	**get_cmd_w_redir(char *line)
 // metacharacters : | & ; ( ) < > ; $
 static int	is_spe_char(int c)
 {
+	printf("is_spe_char\n");
 	// ajouter  c == '$' ????
 	if (c == '>' || c == '<' || c == '\'' || c == '\"'
 		|| c == '|')
@@ -352,6 +369,7 @@ static int	is_spe_char(int c)
 
 static int	file_char(int c)
 {
+	printf("file_char\n");
 	if (ft_isprint(c) && !is_spe_char(c) && c != ' ')
 		return (1);
 	return (0);
@@ -359,6 +377,7 @@ static int	file_char(int c)
 
 static void	error_syntax(char *line)
 {
+	printf("error_syntax\n");
 	char *token;
 
 	token = 0;
@@ -377,6 +396,7 @@ static void	error_syntax(char *line)
 
 static char	*get_filename(t_redir *redir, char *line)
 {
+	printf("get_filename\n");
 	int		i;
 	int		count;
 	char	*filename;
@@ -384,6 +404,15 @@ static char	*get_filename(t_redir *redir, char *line)
 
 	i = -1;
 	count = 0;
+	printf("get_filename line .%s.\n", line);
+	if (redir->out || redir->in)
+		line++;
+	else if (redir->out_end || redir->in_read)
+		line += 2;
+	while (line[++i] == ' ' && *line)
+		line++;
+	printf("get_filename line .%s.\n", line);
+	i = -1;
 	while (file_char(line[++i]))
 		count++;
 	if (count == 0)
@@ -395,6 +424,7 @@ static char	*get_filename(t_redir *redir, char *line)
 	if (!filename)
 		return (0);
 	i = 0;
+	printf("size %d\n", count);
 	while (file_char((int)*line))
 	{
 		filename[i] = (int)*line;
@@ -411,6 +441,7 @@ static char	*get_filename(t_redir *redir, char *line)
 
 static char	*get_redir(t_redir *cmd, char *line)
 {
+	printf("get_redir\n");
 	while (*line && *line != '<' && *line != '>')
 		line++;
 	if (*line == '<' && *(line + 1) == '>')
@@ -429,8 +460,9 @@ static char	*get_redir(t_redir *cmd, char *line)
 	return (line);
 }
 
-static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line)
+static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 {
+	printf("init_redir\n");
 	t_redir	*new;
 	char	*linetrim;
 	char	*tmp;
@@ -446,18 +478,20 @@ static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 			return (0);
 		ft_memset(new, 0, sizeof(t_redir));
 		linetrim = get_redir(new, linetrim);
+		printf ("in %d\n", new->in);
+		printf ("out %d\n", new->out);
 		if (!linetrim)
 		{
 			free(new);
 			free(tmp);
 			return (0);
 		}
-		if (new->out || new->in)
-			linetrim++;
-		else if (new->out_end || new->in_read)
-			linetrim += 2;
-		while (linetrim[++i] == ' ' && *linetrim)
-			linetrim++;
+		// if (new->out || new->in)
+		// 	linetrim++;
+		// else if (new->out_end || new->in_read)
+		// 	linetrim += 2;
+		// while (linetrim[++i] == ' ' && *linetrim)
+		// 	linetrim++;
 		linetrim = get_filename(new, linetrim);
 		if (!new->filename)
 		{
@@ -467,16 +501,24 @@ static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line)
 		}
 		new->next = 0;
 		ft_lstadd_back(&redir, new);
+		linetrim = trim_space(linetrim);
 		if (ft_strlen(linetrim) == 0)
 			break ;
+		if (linetrim[0] != '>' && linetrim[0] != '<' && ft_strlen(linetrim))
+		{
+			fill_cmd(cmd, linetrim, envp);
+			linetrim += ft_strlen(cmd->cmd[0]);
+		}
 	}
 	cmd->redir = redir;
+	printf("av de sortir line .%s.\n", linetrim);
 	free(tmp);
 	return (1);
 }
 
 static void	is_builtin(t_cmd *cmd)
 {
+	printf("id_builtin\n");
 	if (!cmd->cmd)
 		return ;
 	if (!ft_strncmp(cmd->cmd[0], "echo", ft_strlen("echo")))
@@ -495,8 +537,17 @@ static void	is_builtin(t_cmd *cmd)
 		cmd->builtin = 1;
 }
 
+static	void	fill_cmd(t_cmd *cmd, char *line, char **envp)
+{
+	cmd->path = get_path(envp);
+	cmd->cmd = get_cmd(line);
+	cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
+	is_builtin(cmd);
+}
+
 static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 {
+	printf("init_cmd\n");
 	t_cmd	*cmd;
 	int		len;
 
@@ -504,17 +555,14 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	if (!cmd)
 		return (0);
 	ft_memset(cmd, 0, sizeof(t_cmd));
-	if (envp != 0)
-	{
-		cmd->path = get_path(envp);
-		cmd->cmd = get_cmd(line);
-		cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
-		is_builtin(cmd);
-	}
+	printf("ds cmd .%s.\n", line);
+	// if (envp != 0)
+	if (line[0] != '<' && line[0] != '>')
+		fill_cmd(cmd, line, envp);
 	len = ft_strlen(line);
 	if (ft_strnstr(line, ">", len) || ft_strnstr(line, "<", len))
 	{
-		if (!init_redir(cmd, redir, line))
+		if (!init_redir(cmd, redir, line, envp))
 		{
 			free_struct(cmd);
 			return (0);
@@ -525,6 +573,7 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 
 static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **envp)
 {
+	printf("check_grammar_line\n");
 	char	*linetrim;
 
 	linetrim = ft_strtrim(line, " 	");
@@ -548,16 +597,17 @@ static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **
 		free(linetrim);
 		return (0);
 	}
-	if (linetrim[0] == '>' || linetrim[0] == '<')
-		cmd = init_cmd(linetrim, 0, redir);
-	else
-		cmd = init_cmd(linetrim, envp, redir);
+	// if (linetrim[0] == '>' || linetrim[0] == '<')
+		// cmd = init_cmd(linetrim, 0, redir);
+	// else
+	cmd = init_cmd(linetrim, envp, redir);
 	free(linetrim);
 	return (cmd);
 }
 
 static int	count_pipe(char *line)
 {
+	printf("count_pipe\n");
 	int	count;
 
 	count = 0;
@@ -630,13 +680,17 @@ int	main(int ac, char **av, char **envp)
 
 void	print_redir(t_redir *redir)
 {
-	for (int i = 0; redir; i++)
+	if (redir)
 	{
-		printf("out %d end %d\n", redir->out, redir->out_end);
-		printf("in %d read %d\n", redir->in, redir->in_read);
-		printf("Filename .%s.\n", redir->filename);
-		redir = redir->next;
+		for (int i = 0; redir; i++)
+		{
+			printf("out %d end %d\n", redir->out, redir->out_end);
+			printf("in %d read %d\n", redir->in, redir->in_read);
+			printf("Filename .%s.\n", redir->filename);
+			redir = redir->next;
+		}
 	}
+
 }
 
 void	print_struct(t_cmd *cmd)
@@ -647,7 +701,7 @@ void	print_struct(t_cmd *cmd)
 	// printf("Cmd with args :\n");
 	if (cmd->cmd)
 	{
-		for(int i = 0; cmd->cmd[i]; i++)
+		for (int i = 0; cmd->cmd[i]; i++)
 		{
 			if (i == 0)
 				printf("\ncmd : .%s.\n", cmd->cmd[i]);
@@ -659,12 +713,15 @@ void	print_struct(t_cmd *cmd)
 		printf("\ncmd->cmd : (null)\n");
 	printf("Is that a builtin : %d\n", cmd->builtin);
 	printf("Cmd path : %s\n", cmd->path_cmd);
-	print_redir(cmd->redir);
+	if (cmd->redir)
+	{
+		print_redir(cmd->redir);
+	}
 }
 
 void	print_linked_list(t_cmd *pipe)
 {
-	for(int i = 0; pipe; i++)
+	while (pipe)
 	{
 		print_struct(pipe);
 		pipe = pipe->next;
