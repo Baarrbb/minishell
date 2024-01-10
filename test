@@ -81,3 +81,5 @@ gerer redirection avant commande
 cat test | ls
 
 ls > cat > cat > catdsadas < out1
+
+valgrind --suppressions=readline.supp --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./minishell

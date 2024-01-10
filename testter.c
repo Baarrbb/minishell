@@ -66,39 +66,31 @@ static int	get_nb_args(char **quote)
 	count = 0;
 	while (quote[++i])
 	{
-		printf("quote[i] .%s.\n", quote[i]);
 		last_pos = ft_strlen(quote[i]) - 1;
 		if ((quote[i][0] == '\"' && quote[i][last_pos] == '\"')
 			|| (quote[i][0] == '\'' && quote[i][last_pos] == '\''))
 			count++;
 		else if (quote[i][0] == '\"')
 		{
-			while (quote[i][last_pos] != '\"' && quote[i] != 0)
+			while (quote[i][last_pos] != '\"' && quote[i])
 			{
-				printf("qui] .%s.\n", quote[i]);
 				i++;
-				printf("qui++] .%s.\n", quote[i]);
 				if (!quote[i])
-				{
-					printf("av ret %d\n", count);
 					return (count += 1);
-				}
-				if (quote[i] != 0)
-				{
-					printf("je ne rentre pas\n");
+				else
 					last_pos = ft_strlen(quote[i]) - 1;
-				}
 			}
-			printf("seg %d??\n", i);
 			count++;
-			printf("count %d\n", count);
 		}
 		else if (quote[i][0] == '\'')
 		{
 			while (quote[i][last_pos] != '\'' && quote[i])
 			{
 				i++;
-				last_pos = ft_strlen(quote[i]) - 1;
+				if (!quote[i])
+					return (count += 1);
+				else
+					last_pos = ft_strlen(quote[i]) - 1;
 			}
 			count++;
 		}
@@ -130,10 +122,12 @@ static char **get_args_w_quote(char **quote, int nb_args, char *line_quote)
 		else if (quote[i][0] == '\"')
 		{
 			good_quote[j] = ft_strdup(quote[i]);
-			while (quote[i][last_pos] != '\"')
+			while (quote[i][last_pos] != '\"' && quote[i] != 0)
 			{
 				i++;
 				last_pos = ft_strlen(quote[i]) - 1;
+				if (!quote[i])
+					return (good_quote);
 				good_quote[j] = strjoin(good_quote[j], quote[i]);
 			}
 		}
@@ -143,6 +137,8 @@ static char **get_args_w_quote(char **quote, int nb_args, char *line_quote)
 			{
 				i++;
 				last_pos = ft_strlen(quote[i]) - 1;
+				if (!quote[i])
+					return (good_quote);
 				good_quote[j] = strjoin(good_quote[j], quote[i]);
 			}
 		}
@@ -152,53 +148,6 @@ static char **get_args_w_quote(char **quote, int nb_args, char *line_quote)
 	}
 	return (good_quote);
 }
-
-// static char	**get_args_w_quote(char **quote, int nb_args, char *line_quote)
-// {
-// 	char	**good_quote;
-// 	int		i;
-// 	int		j;
-// 	char	*trim;
-// 	char	*tmp;
-// 	j = 0;
-// 	good_quote = ft_calloc(nb_args + 1, sizeof(char *));
-// 	trim = ft_strtrim(line_quote, " 	");
-// 	tmp = trim;
-// 	while (*trim)
-// 	{
-// 		i = 0;
-// 		if (*trim == '\"')
-// 		{
-// 			i++;
-// 			while (trim[i] != '\"')
-// 				i++;
-// 			good_quote[j] = ft_substr(trim, 0, i + 1);
-// 			trim += i + 1;
-// 			trim = ft_strtrim(trim, " 	");
-// 		}
-// 		else if (*trim == '\'')
-// 		{
-// 			i++;
-// 			while (trim[i] != '\'')
-// 				i++;
-// 			good_quote[j] = ft_substr(trim, 0, i + 1);
-// 			trim += i + 1;
-// 			trim = ft_strtrim(trim, " 	");
-// 		}
-// 		else
-// 		{
-// 			while (*trim == ' ')
-// 				trim++;
-// 			while (trim[i] != ' ')
-// 				i++;
-// 			good_quote[j] = ft_substr(trim, 0, i);
-// 			trim += i + 1;
-// 		}
-// 		j++;
-// 	}
-// 	free(tmp);
-// 	return (good_quote);
-// }
 
 static char	**args_w_quote(char *line_quote)
 {
@@ -224,6 +173,7 @@ static char	**args_w_quote(char *line_quote)
 int main()
 {
 	char **quote = args_w_quote("\"jkdshfkjdshfk\",\"jsdhfk jdh\" \"rrrrrrr\"dfsdsf");
+	printf("BIEN GERE ?? \n\n");
 	for(int i = 0; quote[i]; i++)
 		printf(".%s.\n", quote[i]);
 }

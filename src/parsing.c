@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/10 20:43:28 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/10 20:48:04 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -404,14 +404,12 @@ static char	*get_filename(t_redir *redir, char *line)
 
 	i = -1;
 	count = 0;
-	printf("get_filename line .%s.\n", line);
 	if (redir->out || redir->in)
 		line++;
 	else if (redir->out_end || redir->in_read)
 		line += 2;
 	while (line[++i] == ' ' && *line)
 		line++;
-	printf("get_filename line .%s.\n", line);
 	i = -1;
 	while (file_char(line[++i]))
 		count++;
@@ -424,7 +422,6 @@ static char	*get_filename(t_redir *redir, char *line)
 	if (!filename)
 		return (0);
 	i = 0;
-	printf("size %d\n", count);
 	while (file_char((int)*line))
 	{
 		filename[i] = (int)*line;
@@ -478,20 +475,12 @@ static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 			return (0);
 		ft_memset(new, 0, sizeof(t_redir));
 		linetrim = get_redir(new, linetrim);
-		printf ("in %d\n", new->in);
-		printf ("out %d\n", new->out);
 		if (!linetrim)
 		{
 			free(new);
 			free(tmp);
 			return (0);
 		}
-		// if (new->out || new->in)
-		// 	linetrim++;
-		// else if (new->out_end || new->in_read)
-		// 	linetrim += 2;
-		// while (linetrim[++i] == ' ' && *linetrim)
-		// 	linetrim++;
 		linetrim = get_filename(new, linetrim);
 		if (!new->filename)
 		{
@@ -511,7 +500,6 @@ static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 		}
 	}
 	cmd->redir = redir;
-	printf("av de sortir line .%s.\n", linetrim);
 	free(tmp);
 	return (1);
 }
@@ -555,8 +543,6 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	if (!cmd)
 		return (0);
 	ft_memset(cmd, 0, sizeof(t_cmd));
-	printf("ds cmd .%s.\n", line);
-	// if (envp != 0)
 	if (line[0] != '<' && line[0] != '>')
 		fill_cmd(cmd, line, envp);
 	len = ft_strlen(line);
@@ -597,9 +583,6 @@ static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **
 		free(linetrim);
 		return (0);
 	}
-	// if (linetrim[0] == '>' || linetrim[0] == '<')
-		// cmd = init_cmd(linetrim, 0, redir);
-	// else
 	cmd = init_cmd(linetrim, envp, redir);
 	free(linetrim);
 	return (cmd);
