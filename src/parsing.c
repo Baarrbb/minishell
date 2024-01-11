@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/11 20:38:28 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/11 20:40:27 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,8 +265,6 @@ static char	**get_cmd(char *line)
 	printf("get_cmd\n");
 	char	**tmp;
 	char	**quote;
-	int		i;
-	char	*line_wo_quote;
 
 	tmp = 0;
 	quote = 0;
