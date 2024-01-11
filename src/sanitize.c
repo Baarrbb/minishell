@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/30 18:33:59 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/08 15:53:24 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/09 15:00:02 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ void	free_struct(t_cmd *cmd)
 		free_char_tab(cmd->path);
 	if (cmd->cmd)
 		free_char_tab(cmd->cmd);
+	free(cmd->quote_cmd);
 	free_redir(&(cmd->redir));
 	free(cmd->path_cmd);
 	free(cmd);
@@ -60,6 +61,7 @@ void	free_list(t_cmd **list)
 			if ((*list)->cmd)
 				free_char_tab((*list)->cmd);
 			free_redir(&((*list)->redir));
+			free((*list)->quote_cmd);
 			free((*list)->path_cmd);
 			tmp = (*list)->next;
 			free(*list);

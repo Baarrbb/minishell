@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 16:37:27 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/09 11:32:52 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/09 17:40:45 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ int	good_flag(char *arguments)
 	int	i;
 
 	i = 1;
+	if (!arguments)
+		return (0);
 	if (arguments[0] != '-')
 		return (1);
 	while (arguments[i])
@@ -28,13 +30,15 @@ int	good_flag(char *arguments)
 	return (0);
 }
 
-void	echo(char **cmds_args)
+void	our_echo(char **cmds_args)
 {
 	int	next_line;
 	int	i;
 
 	i = 1;
 	next_line = 0;
+	if (cmds_args[1] == NULL)
+		return ;
 	while (good_flag(cmds_args[i]) == 0)
 	{
 		next_line = 1;
@@ -49,7 +53,7 @@ void	echo(char **cmds_args)
 		printf("\n");
 }
 
-void	pwd()
+void	our_pwd()
 {
 	char cwd[1024];
 
@@ -72,7 +76,7 @@ void remove_elem(char ***arr, int index)
 	(*arr)[i] = NULL;
 }
 
-void	unset(char **cmds, char **copy_env)
+void	our_unset(char **cmds, char **copy_env)
 {
 	int	i;
 	int	j;
@@ -87,21 +91,33 @@ void	unset(char **cmds, char **copy_env)
 			if (ft_strncmp(copy_env[i], cmds[j], ft_strlen(cmds[2])) == 0)
 				if (copy_env[i][ft_strlen(cmds[j])] == '=')
 					remove_elem(&copy_env, i);
-			j++
+			j++;
 		}
 		i++;
 	}
 	i = 0;
-	while (copy_env[i])
-	{
-		printf("%s\n", copy_env[i]);
-		i++;
-	}
 }
 
-void	exit()
+/*void	exit()
 {
 	free_char_tab(command);
 	free_list(&pipe);
 	exit(1);
+}*/
+void	builtingo(t_cmd *cmd, char **env)
+{
+	if (!ft_strncmp(cmd->cmd[0], "echo", ft_strlen("echo")))
+		our_echo(cmd->cmd);
+	else if (!ft_strncmp(cmd->cmd[0], "cd", ft_strlen("cd")))
+		cmd->builtin = 1;
+	else if (!ft_strncmp(cmd->cmd[0], "pwd", ft_strlen("pwd")))
+		our_pwd();
+	else if (!ft_strncmp(cmd->cmd[0], "export", ft_strlen("export")))
+		cmd->builtin = 1;
+	else if (!ft_strncmp(cmd->cmd[0], "unset", ft_strlen("unset")))
+		our_unset(cmd->cmd, env);
+	else if (!ft_strncmp(cmd->cmd[0], "env", ft_strlen("env")))
+		cmd->builtin = 1;
+	else if (!ft_strncmp(cmd->cmd[0], "exit", ft_strlen("exit")))
+		cmd->builtin = 1;
 }

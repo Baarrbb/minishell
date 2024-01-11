@@ -3,16 +3,16 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+         #
+#    By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/11/15 17:04:31 by bsuc              #+#    #+#              #
-#    Updated: 2024/01/03 02:46:26 by bsuc             ###   ########.fr        #
+#    Updated: 2024/01/10 19:48:36 by ytouihar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 SRCS = ft_split.c ft_memset.c ft_strchr.c ft_substr.c ft_strlen.c \
 	ft_bzero.c ft_calloc.c ft_strncmp.c ft_strnstr.c ft_strtrim.c \
-	ft_isprint.c ft_strdup.c 
+	ft_isprint.c ft_strdup.c ft_putstr_fd.c ft_itoa.c
 OBJS = ${SRCS:.c=.o}
 NAME = libft.a
 RM = rm -f

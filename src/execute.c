@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/09 12:22:04 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/10 17:43:28 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,9 @@
 	if (commands->redir != NULL)
 	{
 		if (commands->redir->in)
-			fdin = commands->redir->in;
+			fdin = open(commands->redir->filename, O_RDWR, 0000644);
 		else if (commands->redir->in_read)
-			fdin = commands->redir->in_read;
+			fdin = open(commands->redir->filename, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
 		else
 			fdin = tmpinout[0];
 	}
@@ -47,11 +47,11 @@
 			if (commands->redir != NULL)
 			{
 				if (commands->redir->out)
-					fdout = commands->redir->out;
+					fdout =open(commands->redir->filename, O_CREAT | O_RDWR | O_TRUNC, 0000644);
 				else if (commands->redir->out_end)
-					fdout = commands->redir->out_end;
+					fdout = open(commands->redir->filename, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
 			}
-			//else
+			else
 				fdout = dup(tmpinout[1]);
 		}
 		else
@@ -129,6 +129,88 @@ void	execute_test(const t_cmd *pipes, char **envp)
 }
 */
 
+void	redirections_pipe_in(t_cmd *redirec, int j, int *pipefds)
+{
+	if (redirec->next)
+	{
+		if(dup2(pipefds[j + 1], 1) < 0)
+		{
+			perror("dup2 error to do");
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+void	redirections_in(t_cmd *redirec, int fd)
+{
+	t_cmd	*newpointer;
+	t_redir	*oldredir;
+
+	newpointer = redirec;
+	oldredir = newpointer->redir;
+	while (newpointer->redir != NULL)
+	{
+		if (newpointer->redir->in)
+		{
+			fd = open(newpointer->redir->filename, O_RDONLY);
+			dup2(fd, 0);
+			//close(fd);
+		}
+		newpointer->redir = newpointer->redir->next;
+	}
+	redirec->redir = oldredir;
+}
+
+void	redirections_pipe_out(t_cmd *redirec, int j, int *pipefds)
+{
+	if (j != 0)
+	{
+		if (dup2(pipefds[j-2], 0) < 0)
+		{
+			perror("dup2 error to do");
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+void	redirections_out(t_cmd *redirec, int fd)
+{
+	t_cmd	*newpointer;
+	t_redir	*oldredir;
+
+	newpointer = redirec;
+	oldredir = newpointer->redir;
+	while (newpointer->redir != NULL)
+	{
+		if (newpointer->redir->out)
+		{
+			fd = open(newpointer->redir->filename, O_CREAT | O_RDWR | O_TRUNC, 0000644);
+			dup2(fd, 1);
+			//close(fd);
+		}
+		else if (newpointer->redir->out_end)
+		{
+			fd = open(newpointer->redir->filename, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
+			dup2(fd, 1);
+			//close(fd);
+		}
+		newpointer->redir = newpointer->redir->next;
+	}
+	redirec->redir = oldredir;
+}
+
+void	close_all_pipes(int numPipes, int *pipefds)
+{
+	int	i;
+
+	i = 0;
+	while (i < 2 * numPipes)
+	{
+		close(pipefds[i]);
+		i++;
+	}
+}
+
 int	count_struct(t_cmd *list)
 {
 	int	i;
@@ -152,12 +234,14 @@ void execute_test(const t_cmd *pipes, char **envp)
 	int i;
 	pid_t pid;
 	int pipefds[2*numPipes];
+	int fd = -1;
+	int pipeindex;
 
 	i = 0;
-	//creation pipes
-	while(numPipes > i)
+	//creation pipes create_pipes(*pipefds);
+	while (numPipes > i)
 	{
-		if(pipe(pipefds + i*2) < 0) 
+		if (pipe(pipefds + i*2) < 0) 
 		{
 			perror("couldn't pipe");
 			exit(EXIT_FAILURE);
@@ -165,80 +249,49 @@ void execute_test(const t_cmd *pipes, char **envp)
 		i++;
 	}
 	//forking
-	int j = 0;
+	pipeindex = 0;
 	while (command) 
 	{
-		pid = fork();
-		if(pid == 0) 
+		if (command->builtin)
+			builtingo(command, envp);
+		else
 		{
-			//last ommand
-			if (command->next)
+			pid = fork();
+			if (pid == 0) 
 			{
-				if(dup2(pipefds[j + 1], 1) < 0)
+				//not last command
+				redirections_pipe_in(command, pipeindex, pipefds);
+				//redirction out
+				redirections_out(command, fd);
+				//if not first command
+				redirections_pipe_out(command, pipeindex, pipefds);
+				//redirection_in
+				redirections_in(command, fd);
+				//close all pipes
+				close_all_pipes(numPipes, pipefds);
+				//execution et gestion d'erreur
+				if (execve(command->path_cmd, command->cmd, envp) < 0)
 				{
-					perror("dup2 error to do");
-					exit(EXIT_FAILURE);
+					error_managing(command);
+					exit(EXIT_FAILURE);	
 				}
 			}
-			//redirction out
-			if (command->redir != NULL)
+			else if (pid < 0)
 			{
-				if (command->redir->out)
-					dup2(open(command->redir->filename, O_CREAT | O_RDWR | O_TRUNC, 0000644), 1);
-				else if (command->redir->out_end)
-					dup2(open(command->redir->filename, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR), 1);
-			}
-			//if not first command&& j!= 2*numPipes
-			if (j != 0)
-			{
-				if (dup2(pipefds[j-2], 0) < 0)
-				{
-					perror("dup2 error to do");
-					exit(EXIT_FAILURE);
-				}
-			}
-			i = 0;
-			while (i < 2 * numPipes)
-			{
-				close(pipefds[i]);
-				i++;
-			}
-			/*if (command->redir != NULL)
-			{
-				if (command->redir->in)
-				{
-					dup2(open(command->redir->filename, O_CREAT | O_RDWR | O_TRUNC, 0000644), 0);
-				}
-				else if (command->redir->in_read)
-					dup2(open(command->redir->filename, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR), 0);
-			}*/
-			if (execve(command->path_cmd, command->cmd, envp) < 0)
-			{
-				perror("command not found error to do");
+				perror("dup2 error to do");
 				exit(EXIT_FAILURE);
 			}
 		}
-		else if (pid < 0)
-		{
-			perror("dup2 error to do");
-			exit(EXIT_FAILURE);
-		}
 		command = command->next;
-		j += 2;
+		pipeindex += 2;
 	}
 	/**Parent closes the pipes and wait for children*/
-
-	i = 0;
-	while (i < 2 * numPipes)
-	{
-		close(pipefds[i]);
-		i++;
-	}
+	close_all_pipes(numPipes, pipefds);
 
 	i = 0;
 	while (i < numPipes + 1)
 	{
-		wait(&status);
+		command->exit_val = waitpid(pid, &status, 0);
 		i++;
 	}
 }

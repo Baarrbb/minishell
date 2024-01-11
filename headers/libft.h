@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/20 16:39:43 by barb              #+#    #+#             */
-/*   Updated: 2024/01/03 01:27:44 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/10 19:48:29 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,5 +29,7 @@ char	*ft_strnstr(const char *big, const char *little, size_t len);
 char	*ft_strtrim(const char *s1, const char *set);
 int		ft_isprint(int c);
 char	*ft_strdup(const char *s);
+void	ft_putstr_fd(char *s, int fd);
+char	*ft_itoa(int n);
 
 #endif

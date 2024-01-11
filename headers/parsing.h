@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/09 12:22:57 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/10 19:53:33 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 #include <readline/history.h>
 #include "libft.h"
 #include <unistd.h>
+#include <sys/stat.h>
+#include <signal.h>
 
 # define BOLD "\x1b[1m"
 # define RED "\x1b[31m"
@@ -41,6 +43,7 @@ typedef struct s_cmd
 	int				*quote_cmd;
 	int				builtin;
 	char			*path_cmd;
+	int				exit_val;
 	int				background;
 	t_redir			*redir;
 	struct s_cmd	*next;
@@ -58,9 +61,11 @@ void	print_linked_list(t_cmd *pipe);
 /*test*/
 void	execute_test(const t_cmd *pipe, char **envp);
 int		check_commands(t_cmd *commands);
-void	is_a_variable(t_cmd *testons);
-void	handle_quoting(t_cmd *quoting);
+void	is_a_variable(t_cmd *testons, char **envp);
+int			handle_quoting(t_cmd *quoting);
 int		count_struct(t_cmd *list);
-
-
+void	builtingo(t_cmd *cmd, char **env);
+void	error_exec(t_cmd *comands);
+void	error_managing(t_cmd *command);
+void	sigint_handler(int sig);
 #endif

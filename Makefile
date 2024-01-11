@@ -6,11 +6,11 @@
 #    By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/29 23:25:19 by bsuc              #+#    #+#              #
-#    Updated: 2024/01/04 19:16:37 by ytouihar         ###   ########.fr        #
+#    Updated: 2024/01/10 19:52:11 by ytouihar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRC = src/parsing.c src/sanitize.c  src/manage_list.c src/execute.c src/checks_comms.c
+SRC = src/parsing.c src/sanitize.c  src/manage_list.c src/execute.c src/checks_comms.c src/builtins.c src/errors.c src/signals.c
 OBJ = $(SRC:.c=.o)
 NAME = minishell
 RM = rm -f

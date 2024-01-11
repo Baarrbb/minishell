@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/09 12:16:20 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/10 19:56:45 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -444,9 +444,15 @@ int	main(int ac, char **av, char **envp)
 	t_redir	*redir;
 	int		i;
 	int		yesh_pipe;
+	struct sigaction sa;
+	volatile sig_atomic_t signal_received = 0;
 
 	(void)ac;
 	(void)av;
+	sa.sa_handler = sigint_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);
 	i = -1;
 	pipe = 0;
 	cmd = 0;
@@ -470,12 +476,15 @@ int	main(int ac, char **av, char **envp)
 				break;
 			}
 		}
-		if (i < yesh_pipe + 1)
+		if (i < yesh_pipe + 1 && yesh_pipe)
 			printf("%s `%s\'\n", ERROR_MSG, "|");
-		handle_quoting(pipe);
-		check_commands(pipe);
-		is_a_variable(pipe);
-		execute_test(pipe, envp);
+		if (pipe != NULL)
+		{
+			handle_quoting(pipe);
+			check_commands(pipe);
+			is_a_variable(pipe, envp);
+			execute_test(pipe, envp);
+		}
 		print_linked_list(pipe);
 		free(line);
 		free_char_tab(command);
