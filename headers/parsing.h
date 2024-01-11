@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/10 17:30:15 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/11 16:53:25 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,9 +39,9 @@ typedef struct s_cmd
 	char			**path;
 	char			**cmd;
 	int				builtin;
-	int				var_sys;
 	char			*path_cmd;
 	int				exit_val;
+	int				*cmd_quote; //tableau int pour quote 1 = sg 2 = db
 	t_redir			*redir;
 	struct s_cmd	*next;
 }	t_cmd;

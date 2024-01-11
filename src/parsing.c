@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/10 20:48:04 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/11 16:45:13 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,8 @@ static char **copy_env(char **envp)
 	char	**cpy_env;
 
 	i = 0;
+	if (!envp[0])
+		return (0);
 	while (envp[i])
 		i++;
 	cpy_env = ft_calloc(i + 1, sizeof(char *));
@@ -91,6 +93,8 @@ static char	**get_path(char **envp)
 	i = -1;
 	path = 0;
 	del_path = 0;
+	if(!envp)
+		return (0);
 	while (envp[++i])
 	{
 		if (!ft_strncmp(envp[i], "PATH", 4))
@@ -111,6 +115,8 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 	char	*full_cmd;
 	char	**wo_param;
 
+	if (!cmd->path)
+		return (0);
 	full_cmd = 0;
 	i = -1;
 	wo_param = ft_split (cmd1, ' ');
@@ -161,36 +167,8 @@ static int	check_quote(char *line)
 	return (1);
 }
 
-static char	**all_args_w_quote(char **tmp, char **quote)
-{
-	printf("all_args_w_quote\n");
-	int		i;
-	int		j;
-	char	**cmd;
-
-	i = 0;
-	j = 1;
-	while (tmp[i])
-		i++;
-	while (quote[j])
-		j++;
-	cmd = ft_calloc(i + j + 1, sizeof(char *));
-	if (!cmd)
-		return (0);
-	i = -1;
-	while (tmp[++i])
-		cmd[i] = ft_strdup(tmp[i]);
-	j = -1;
-	while (quote[++j])
-		cmd[i++] = ft_strdup(quote[j]);
-	free_char_tab(tmp);
-	free_char_tab(quote);
-	return (cmd);
-}
-
 static int	get_nb_args(char **quote)
 {
-	printf("get_nb_args\n");
 	int	i;
 	int	last_pos;
 	int	count;
@@ -205,19 +183,25 @@ static int	get_nb_args(char **quote)
 			count++;
 		else if (quote[i][0] == '\"')
 		{
-			while (quote[i][last_pos] != '\"')
+			while (quote[i][last_pos] != '\"' && quote[i])
 			{
 				i++;
-				last_pos = ft_strlen(quote[i]) - 1;
+				if (!quote[i])
+					return (count += 1);
+				else
+					last_pos = ft_strlen(quote[i]) - 1;
 			}
 			count++;
 		}
 		else if (quote[i][0] == '\'')
 		{
-			while (quote[i][last_pos] != '\'')
+			while (quote[i][last_pos] != '\'' && quote[i])
 			{
 				i++;
-				last_pos = ft_strlen(quote[i]) - 1;
+				if (!quote[i])
+					return (count += 1);
+				else
+					last_pos = ft_strlen(quote[i]) - 1;
 			}
 			count++;
 		}
@@ -227,60 +211,57 @@ static int	get_nb_args(char **quote)
 	return (count);
 }
 
-static char	**get_args_w_quote(int nb_args, char *line_quote)
+static char **get_args_w_quote(char **quote, int nb_args, char *line_quote)
 {
-	printf("get_args_w_quote\n");
-	char	**good_quote;
 	int		i;
 	int		j;
-	char	*trim;
-	char	*tmp;
+	int		last_pos;
+	char	**good_quote;
 
+	i = -1;
 	j = 0;
 	good_quote = ft_calloc(nb_args + 1, sizeof(char *));
-	trim = ft_strtrim(line_quote, " 	");
-	tmp = trim;
-	while (*trim)
+	if (!good_quote)
+		return (0);
+	while (quote[++i])
 	{
-		i = 0;
-		if (*trim == '\"')
+		last_pos = ft_strlen(quote[i]) - 1;
+		if ((quote[i][0] == '\"' && quote[i][last_pos] == '\"')
+			|| (quote[i][0] == '\'' && quote[i][last_pos] == '\''))
+			good_quote[j] = ft_strdup(quote[i]);
+		else if (quote[i][0] == '\"')
 		{
-			i++;
-			while (trim[i] != '\"')
+			good_quote[j] = ft_strdup(quote[i]);
+			while (quote[i][last_pos] != '\"' && quote[i] != 0)
+			{
 				i++;
-			good_quote[j] = ft_substr(trim, 0, i + 1);
-			trim += i + 1;
-			trim = trim_space(trim);
+				last_pos = ft_strlen(quote[i]) - 1;
+				if (!quote[i])
+					return (good_quote);
+				good_quote[j] = strjoin(good_quote[j], quote[i]);
+			}
 		}
-		else if (*trim == '\'')
+		else if (quote[i][0] == '\'')
 		{
-			i++;
-			while (trim[i] != '\'')
+			good_quote[j] = ft_strdup(quote[i]);
+			while (quote[i][last_pos] != '\'' && quote[i] != 0)
+			{
 				i++;
-			good_quote[j] = ft_substr(trim, 0, i + 1);
-			trim += i + 1;
-			trim = trim_space(trim);
+				last_pos = ft_strlen(quote[i]) - 1;
+				if (!quote[i])
+					return (good_quote);
+				good_quote[j] = strjoin(good_quote[j], quote[i]);
+			}
 		}
 		else
-		{
-			while (*trim == ' ')
-				trim++;
-			if (*trim == '>' || *trim == '<')
-				break;
-			while (trim[i] != ' ')
-				i++;
-			good_quote[j] = ft_substr(trim, 0, i);
-			trim += i + 1;
-		}
+			good_quote[j] = ft_strdup(quote[i]);
 		j++;
 	}
-	free(tmp);
 	return (good_quote);
 }
 
 static char	**args_w_quote(char *line_quote)
 {
-	printf("args_w_quote\n");
 	char	**quote;
 	int		nb_args;
 	char	**good_quote;
@@ -293,8 +274,7 @@ static char	**args_w_quote(char *line_quote)
 	if (i == 1)
 		return (quote);
 	nb_args = get_nb_args(quote);
-	good_quote = get_args_w_quote(nb_args, line_quote);
-	free_char_tab(quote);
+	good_quote = get_args_w_quote(quote, nb_args, line_quote);
 	return (good_quote);
 }
 
@@ -317,14 +297,15 @@ static char	**get_cmd(char *line)
 	}
 	else
 	{
-		i = 0;
-		while (line[i] != '\'' && line[i] != '\"')
-			i++;
-		line_wo_quote = ft_substr(line, 0, i - 1);
-		tmp = ft_split(line_wo_quote, ' ');
-		quote = args_w_quote(line + i);
-		free(line_wo_quote);
-		char **good_quote = all_args_w_quote(tmp, quote);
+		// i = 0;
+		// while (line[i] != '\'' && line[i] != '\"')
+		// 	i++;
+		// line_wo_quote = ft_substr(line, 0, i - 1);
+		// tmp = ft_split(line_wo_quote, ' ');
+		// quote = args_w_quote(line + i);
+		// free(line_wo_quote);
+		// char **good_quote = all_args_w_quote(tmp, quote);
+		char **good_quote = args_w_quote(line);
 		return (good_quote);
 	}
 }
@@ -509,19 +490,19 @@ static void	is_builtin(t_cmd *cmd)
 	printf("id_builtin\n");
 	if (!cmd->cmd)
 		return ;
-	if (!ft_strncmp(cmd->cmd[0], "echo", ft_strlen("echo")))
+	if (!ft_strncmp(cmd->cmd[0], "echo", ft_strlen(cmd->cmd[0])))
 		cmd->builtin = 1;
-	else if (!ft_strncmp(cmd->cmd[0], "cd", ft_strlen("cd")))
+	else if (!ft_strncmp(cmd->cmd[0], "cd", ft_strlen(cmd->cmd[0])))
 		cmd->builtin = 1;
-	else if (!ft_strncmp(cmd->cmd[0], "pwd", ft_strlen("pwd")))
+	else if (!ft_strncmp(cmd->cmd[0], "pwd", ft_strlen(cmd->cmd[0])))
 		cmd->builtin = 1;
-	else if (!ft_strncmp(cmd->cmd[0], "export", ft_strlen("export")))
+	else if (!ft_strncmp(cmd->cmd[0], "export", ft_strlen(cmd->cmd[0])))
 		cmd->builtin = 1;
-	else if (!ft_strncmp(cmd->cmd[0], "unset", ft_strlen("unset")))
+	else if (!ft_strncmp(cmd->cmd[0], "unset", ft_strlen(cmd->cmd[0])))
 		cmd->builtin = 1;
-	else if (!ft_strncmp(cmd->cmd[0], "env", ft_strlen("env")))
+	else if (!ft_strncmp(cmd->cmd[0], "env", ft_strlen(cmd->cmd[0])))
 		cmd->builtin = 1;
-	else if (!ft_strncmp(cmd->cmd[0], "exit", ft_strlen("exit")))
+	else if (!ft_strncmp(cmd->cmd[0], "exit", ft_strlen(cmd->cmd[0])))
 		cmd->builtin = 1;
 }
 

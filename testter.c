@@ -45,7 +45,6 @@ char	*strjoin(char *dst, char *s)
 	return (res);
 }
 
-
 void	free_char_tab(char **tab)
 {
 	int	i;
@@ -133,7 +132,8 @@ static char **get_args_w_quote(char **quote, int nb_args, char *line_quote)
 		}
 		else if (quote[i][0] == '\'')
 		{
-			while (quote[i][last_pos] != '\'')
+			good_quote[j] = ft_strdup(quote[i]);
+			while (quote[i][last_pos] != '\'' && quote[i] != 0)
 			{
 				i++;
 				last_pos = ft_strlen(quote[i]) - 1;
@@ -143,7 +143,7 @@ static char **get_args_w_quote(char **quote, int nb_args, char *line_quote)
 			}
 		}
 		else
-			printf("pas encore gere\n");
+			good_quote[j] = ft_strdup(quote[i]);
 		j++;
 	}
 	return (good_quote);
@@ -162,17 +162,14 @@ static char	**args_w_quote(char *line_quote)
 		i++;
 	if (i == 1)
 		return (quote);
-	for(int i = 0; quote[i]; i++)
-		printf("quote .%s.\n", quote[i]);
 	nb_args = get_nb_args(quote);
-	printf("klsd %d\n", nb_args);
 	good_quote = get_args_w_quote(quote, nb_args, line_quote);
 	return (good_quote);
 }
 
 int main()
 {
-	char **quote = args_w_quote("\"jkdshfkjdshfk\",\"jsdhfk jdh\" \"rrrrrrr\"dfsdsf");
+	char **quote = args_w_quote("sed -n \"s/,   $/./p\"");
 	printf("BIEN GERE ?? \n\n");
 	for(int i = 0; quote[i]; i++)
 		printf(".%s.\n", quote[i]);
