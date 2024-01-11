@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/10 17:43:28 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/11 12:04:30 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -226,7 +226,7 @@ int	count_struct(t_cmd *list)
 	return (i);
 }
 
-void execute_test(const t_cmd *pipes, char **envp) 
+void execute_test(t_cmd *pipes, char **envp) 
 {
 	t_cmd *command = (t_cmd *)pipes;
 	int numPipes = count_struct(command);
@@ -269,11 +269,13 @@ void execute_test(const t_cmd *pipes, char **envp)
 				redirections_in(command, fd);
 				//close all pipes
 				close_all_pipes(numPipes, pipefds);
-				//execution et gestion d'erreur
+				//gestion d'erreur
+				error_managing(command);
+				//execution
 				if (execve(command->path_cmd, command->cmd, envp) < 0)
 				{
-					error_managing(command);
-					exit(EXIT_FAILURE);	
+					perror(command->path_cmd);
+					exit(127);
 				}
 			}
 			else if (pid < 0)
@@ -285,13 +287,13 @@ void execute_test(const t_cmd *pipes, char **envp)
 		command = command->next;
 		pipeindex += 2;
 	}
-	/**Parent closes the pipes and wait for children*/
+	//close pipe
 	close_all_pipes(numPipes, pipefds);
-
+	//wait for children & exitval
 	i = 0;
 	while (i < numPipes + 1)
 	{
-		command->exit_val = waitpid(pid, &status, 0);
+		pipes->exit_val = waitpid(pid, &status, 0);
 		i++;
 	}
 }

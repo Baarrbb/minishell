@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/04 19:15:32 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/10 17:52:26 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/11 14:05:10 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,42 +107,49 @@ void	is_a_variable(t_cmd *testons, char **env)
 	while (testons)
 	{
 		j = 0;
-		while (testons->cmd[j])
+		if (testons->cmd != NULL)
 		{
-			l = 1;
-			if (testons->quote_cmd[j] != 1)
+			while (testons->cmd[j])
 			{
-				found = ft_split(testons->cmd[j], '$');
-				while (found[l])
+				l = 1;
+				if (testons->quote_cmd[j] != 1)
 				{
-					i = 0;
-					
-					while (found[l][i])
+					found = ft_split(testons->cmd[j], '$');
+					printf("testons : %s\nsplit : %s\n", testons->cmd[j], found[0]);
+					while (found[l])
 					{
-						if (isntaletter(found[l][i]) == 0)
-							break ;
-						i++;
-					}
-					test2 = ft_substr(found[l], 0, i);
-					tested = getenv(test2);
-					if (tested == NULL)
-					{
-						if (test2[0] == '?' && test2[1] == '\0')
+						i = 0;
+						
+						while (found[l][i])
 						{
-							char *exitval;
-							exitval = ft_itoa(testons->exit_val);
-							testons->cmd[j] = add_to(testons->cmd[j], exitval, ft_strlen(exitval));
-							free(exitval);
+							if (isntaletter(found[l][i]) == 0)
+								break ;
+							i++;
 						}
+						test2 = ft_substr(found[l], 0, i);
+						tested = getenv(test2);
+						printf("test\n");
+						if (tested == NULL)
+						{
+							if (test2[0] == '?' && test2[1] == '\0')
+							{
+								char *exitval;
+								exitval = ft_itoa(testons->exit_val);
+								testons->cmd[j] = add_to(testons->cmd[j], exitval, ft_strlen(exitval));
+								free(exitval);
+							}
+						}
+						if (tested != NULL)
+						{
+							testons->cmd[j] = add_to(testons->cmd[j], tested, ft_strlen(tested));
+						}
+						free(test2);
+						l++;
 					}
-					if (tested != NULL)
-						testons->cmd[j] = add_to(testons->cmd[j], tested, ft_strlen(tested));
-					free(test2);
-					l++;
+					free_char_tab(found);
 				}
-				free_char_tab(found);
+				j++;
 			}
-			j++;
 		}
 		testons = testons->next;
 	}
@@ -175,27 +182,30 @@ int	handle_quoting(t_cmd *quoting)
 	{
 		i = 0;
 		j = 0;
-		while(quoting->cmd[i])
-			i++;
-		//quoting->quote_cmd = malloc(i * sizeof(int));
-		//if (quoting->quote_cmd == NULL)
-		//	return (5);
-		i = 0;
-		while (quoting->cmd[i])
+		if (quoting->cmd != NULL)
 		{
-			if (quoting->cmd[i][0] == '\'')
+			while(quoting->cmd[i])
+				i++;
+			quoting->quote_cmd = malloc(i * sizeof(int));
+			//if (quoting->quote_cmd == NULL)
+			//	return (5);
+			i = 0;
+			while (quoting->cmd[i])
 			{
-				//quoting->cmd[i] = remove_quotes(quoting->cmd[i]);
-				quoting->quote_cmd[i] = 1;
+				if (quoting->cmd[i][0] == '\'')
+				{
+					quoting->cmd[i] = remove_quotes(quoting->cmd[i]);
+					quoting->quote_cmd[i] = 1;
+				}
+				else if (quoting->cmd[i][0] == '\"')
+				{
+					quoting->cmd[i] = remove_quotes(quoting->cmd[i]);
+					quoting->quote_cmd[i] = 2;
+				}
+				else
+					quoting->quote_cmd[i] = 0;
+				i++;
 			}
-			else if (quoting->cmd[i][0] == '\"')
-			{
-				//quoting->cmd[i] = remove_quotes(quoting->cmd[i]);
-				quoting->quote_cmd[i] = 2;
-			}
-			else
-				quoting->quote_cmd[i] = 0;
-			i++;
 		}
 		quoting = quoting->next;
 	}
