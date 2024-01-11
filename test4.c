@@ -253,13 +253,13 @@ static char **fill_args_w_quote(char **args, char *line)
 					i++;
 			}
 			i++;
-			printf("1\n");
 		}
 		args[j] = ft_substr(line, 0, i);
 		j++;
 		line += i;
 		while (is_space(*line) && *line)
 			line++;
+		i = 0;
 	}
 	return (args);
 }
@@ -280,7 +280,7 @@ static char **args_w_quote(char *line)
 
 int main()
 {
-	char *test = "sed -n   p'sdsdf'd  kk'dsf\"sdf df' 'dsf  df'sdd  \"s/,   $/./p\"   ";
+	char *test = "\"\"sed -n   p'sdsdf'd  kk'dsf\"sdf df' 'dsf  df'sdd  \"s/,   $/./p\"   ";
 	printf("nb args %d\n", get_nb_args(test));
 	char **quote = args_w_quote(test);
 	printf("BIEN GERE ?? \n\n");

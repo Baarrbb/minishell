@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/11 16:45:13 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/11 20:38:28 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,13 @@ char	*trim_space(char *line)
 	}
 	printf("DANS TRIM_SPACE\n");
 	return (line);
+}
+
+int	is_space(int c)
+{
+	if (c == ' ' || c == '\t')
+		return (1);
+	return (0);
 }
 
 static char **copy_env(char **envp)
@@ -167,115 +174,90 @@ static int	check_quote(char *line)
 	return (1);
 }
 
-static int	get_nb_args(char **quote)
+static int	get_nb_args(char *line)
 {
 	int	i;
-	int	last_pos;
 	int	count;
 
-	i = -1;
+	i = 0;
 	count = 0;
-	while (quote[++i])
+	while (line[i])
 	{
-		last_pos = ft_strlen(quote[i]) - 1;
-		if ((quote[i][0] == '\"' && quote[i][last_pos] == '\"')
-			|| (quote[i][0] == '\'' && quote[i][last_pos] == '\''))
-			count++;
-		else if (quote[i][0] == '\"')
+		while (is_space(line[i]) && line[i])
+			i++;
+		while(!is_space(line[i]) && line[i])
 		{
-			while (quote[i][last_pos] != '\"' && quote[i])
+			if (line[i] == '\'' && line[i])
 			{
 				i++;
-				if (!quote[i])
-					return (count += 1);
-				else
-					last_pos = ft_strlen(quote[i]) - 1;
+				while (line[i] != '\'')
+					i++;
 			}
-			count++;
-		}
-		else if (quote[i][0] == '\'')
-		{
-			while (quote[i][last_pos] != '\'' && quote[i])
+			if (line[i] == '\"' && line[i])
 			{
 				i++;
-				if (!quote[i])
-					return (count += 1);
-				else
-					last_pos = ft_strlen(quote[i]) - 1;
+				while (line[i] != '\"' && line[i])
+					i++;
 			}
-			count++;
+			i++;
 		}
-		else
-			count++;
+		count++;
+		while (is_space(line[i]) && line[i])
+			i++;
 	}
 	return (count);
 }
 
-static char **get_args_w_quote(char **quote, int nb_args, char *line_quote)
+static char **fill_args_w_quote(char **args, char *line)
 {
+	char	*arg;
 	int		i;
 	int		j;
-	int		last_pos;
-	char	**good_quote;
 
-	i = -1;
+	i = 0;
 	j = 0;
-	good_quote = ft_calloc(nb_args + 1, sizeof(char *));
-	if (!good_quote)
-		return (0);
-	while (quote[++i])
+	arg = 0;
+	while (*line && line[i])
 	{
-		last_pos = ft_strlen(quote[i]) - 1;
-		if ((quote[i][0] == '\"' && quote[i][last_pos] == '\"')
-			|| (quote[i][0] == '\'' && quote[i][last_pos] == '\''))
-			good_quote[j] = ft_strdup(quote[i]);
-		else if (quote[i][0] == '\"')
+		while (is_space(*line) && *line)
+			line++;
+		while(!is_space(line[i]) && line[i])
 		{
-			good_quote[j] = ft_strdup(quote[i]);
-			while (quote[i][last_pos] != '\"' && quote[i] != 0)
+			if (line[i] == '\'' && line[i])
 			{
 				i++;
-				last_pos = ft_strlen(quote[i]) - 1;
-				if (!quote[i])
-					return (good_quote);
-				good_quote[j] = strjoin(good_quote[j], quote[i]);
+				while (line[i] != '\'')
+					i++;
 			}
-		}
-		else if (quote[i][0] == '\'')
-		{
-			good_quote[j] = ft_strdup(quote[i]);
-			while (quote[i][last_pos] != '\'' && quote[i] != 0)
+			if (line[i] == '\"' && line[i])
 			{
 				i++;
-				last_pos = ft_strlen(quote[i]) - 1;
-				if (!quote[i])
-					return (good_quote);
-				good_quote[j] = strjoin(good_quote[j], quote[i]);
+				while (line[i] != '\"' && line[i])
+					i++;
 			}
+			i++;
 		}
-		else
-			good_quote[j] = ft_strdup(quote[i]);
+		args[j] = ft_substr(line, 0, i);
 		j++;
+		line += i;
+		while (is_space(*line) && *line)
+			line++;
+		i = 0;
 	}
-	return (good_quote);
+	return (args);
 }
 
-static char	**args_w_quote(char *line_quote)
+static char **args_w_quote(char *line)
 {
-	char	**quote;
-	int		nb_args;
-	char	**good_quote;
-	int		i;
+	int		size;
+	char	**args;
 
-	quote = ft_split(line_quote, ' ');
-	i = -1;
-	while (quote[i])
-		i++;
-	if (i == 1)
-		return (quote);
-	nb_args = get_nb_args(quote);
-	good_quote = get_args_w_quote(quote, nb_args, line_quote);
-	return (good_quote);
+	size = get_nb_args(line);
+	args = ft_calloc(size + 1, sizeof(char *));
+	if (!args)
+		return (0);
+	args = fill_args_w_quote(args, line);
+	return (args);
 }
 
 static char	**get_cmd(char *line)
