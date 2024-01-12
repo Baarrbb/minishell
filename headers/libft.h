@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/20 16:39:43 by barb              #+#    #+#             */
-/*   Updated: 2024/01/03 01:27:44 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/12 22:30:58 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,5 +29,7 @@ char	*ft_strnstr(const char *big, const char *little, size_t len);
 char	*ft_strtrim(const char *s1, const char *set);
 int		ft_isprint(int c);
 char	*ft_strdup(const char *s);
+char	*ft_itoa(int n);
+int		ft_atoi(const char *nptr);
 
 #endif

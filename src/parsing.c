@@ -6,13 +6,13 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/12 20:37:17 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/12 22:45:31 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parsing.h"
 
-static char	**get_cmd_w_redir(char *line);
+static char		**get_cmd_w_redir(char *line);
 static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir);
 static	void	fill_cmd(t_cmd *cmd, char *line, char **envp);
 
@@ -70,7 +70,34 @@ int	is_space(int c)
 	return (0);
 }
 
-static char **copy_env(char **envp)
+static void add_shlvl(char **envp)
+{
+	int		i;
+	int		j;
+	char	*new;
+
+	i = -1;
+	while (envp[++i])
+	{
+		if (!ft_strncmp(envp[i], "SHLVL", ft_strlen("SHLVL")))
+		{
+			j = 0;
+			while (envp[i][j] != '=')
+				j++;
+			j += 1;
+			if (ft_atoi(envp[i] + j))
+			{
+				new = ft_itoa(ft_atoi(envp[i] + j) + 1);
+				free(envp[i]);
+				envp[i] = 0;
+				envp[i] = strjoin(ft_strdup("SHLVL="), new);
+				free(new);
+			}
+		}
+	}
+}
+
+static char	**copy_env(char **envp)
 {
 	int		i;
 	char	**cpy_env;
@@ -86,6 +113,7 @@ static char **copy_env(char **envp)
 	i = -1;
 	while (envp[++i])
 		cpy_env[i] = ft_strdup(envp[i]);
+	add_shlvl(cpy_env);
 	return (cpy_env);
 }
 
@@ -99,7 +127,7 @@ static char	**get_path(char **envp)
 	i = -1;
 	path = 0;
 	del_path = 0;
-	if(!envp)
+	if (!envp)
 		return (0);
 	while (envp[++i])
 	{
@@ -184,10 +212,10 @@ static int	get_nb_args(char *line)
 	{
 		while (is_space(line[i]) && line[i])
 			i++;
-		while(!is_space(line[i]) && line[i])
+		while (!is_space(line[i]) && line[i])
 		{
 			if (line[i] == '>' || line[i] == '<')
-				break;
+				break ;
 			if (line[i] == '\'' && line[i])
 			{
 				i++;
@@ -211,7 +239,7 @@ static int	get_nb_args(char *line)
 	return (count);
 }
 
-static char **fill_args_w_quote(char **args, char *line)
+static char	**fill_args_w_quote(char **args, char *line)
 {
 	char	*arg;
 	int		i;
@@ -224,10 +252,10 @@ static char **fill_args_w_quote(char **args, char *line)
 	{
 		while (is_space(*line) && *line)
 			line++;
-		while(!is_space(line[i]) && line[i])
+		while (!is_space(line[i]) && line[i])
 		{
 			if (line[i] == '>' || line[i] == '<')
-				break;
+				break ;
 			if (line[i] == '\'' && line[i])
 			{
 				i++;
@@ -254,7 +282,7 @@ static char **fill_args_w_quote(char **args, char *line)
 	return (args);
 }
 
-static char **args_w_quote(char *line)
+static char	**args_w_quote(char *line)
 {
 	int		size;
 	char	**args;
@@ -293,6 +321,7 @@ static char	**get_cmd_w_redir(char *line)
 	char	*cmd;
 	char	*cmd_trim;
 	char	**cmd_args;
+
 	i = 0;
 	while (line[i] != '<' && line[i] != '>')
 		i++;
@@ -312,8 +341,6 @@ static char	**get_cmd_w_redir(char *line)
 	return (cmd_args);
 }
 
-//tous les caracteres speciaux sauf space tab newline
-// metacharacters : | & ; ( ) < > ; $
 static int	is_spe_char(int c)
 {
 	// printf("is_spe_char\n");
@@ -334,7 +361,7 @@ static int	file_char(int c)
 static void	error_syntax(char *line)
 {
 	printf("error_syntax\n");
-	char *token;
+	char	*token;
 
 	token = 0;
 	if (line[0] == 0)
@@ -357,7 +384,7 @@ static char	*test_filename(char *line)
 
 	i = 0;
 	count = 0;
-	while(!is_space(line[i]) && line[i])
+	while (!is_space(line[i]) && line[i])
 	{
 		if (line[i] == '\'' && line[i])
 		{
@@ -393,8 +420,6 @@ static char	*get_filename(t_redir *redir, char *line)
 	printf("get_filename\n");
 	int		i;
 	int		count;
-	char	*filename;
-	char	*filetrim;
 
 	i = -1;
 	count = 0;
@@ -407,26 +432,6 @@ static char	*get_filename(t_redir *redir, char *line)
 	while (line[++i] == ' ' && *line)
 		line++;
 	i = -1;
-	// while (file_char(line[++i]))
-	// 	count++;
-	// if (count == 0)
-	// {
-	// 	error_syntax(line);
-	// 	return (0);
-	// }
-	// filename = ft_calloc((count + 1), sizeof(char));
-	// if (!filename)
-	// 	return (0);
-	// i = 0;
-	// while (file_char((int)*line))
-	// {
-	// 	filename[i] = (int)*line;
-	// 	line++;
-	// 	i++;
-	// }
-	// filetrim = ft_strtrim(filename, " ");
-	// free(filename);
-	// redir->filename = filetrim;
 	redir->filename = test_filename(line);
 	line += ft_strlen(redir->filename);
 	if (*line == 0)
@@ -478,14 +483,12 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 {
 	printf("init_redir\n");
 	t_redir	*new;
-	t_cmd	*new_cmd;
 	char	*linetrim;
 	char	*tmp;
 	int		i;
 
 	linetrim = ft_strdup(line);
 	tmp = linetrim;
-	new_cmd = 0;
 	while (*linetrim)
 	{
 		i = -1;
@@ -521,6 +524,8 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 		}
 		else if (linetrim[0] != '>' && linetrim[0] != '<' && ft_strlen(linetrim))
 		{
+			t_cmd *new_cmd;
+
 			new_cmd = ft_calloc(1, sizeof(t_cmd));
 			if (!new_cmd)
 				return (0);
@@ -692,7 +697,7 @@ int	main(int ac, char **av, char **envp)
 			else
 			{
 				free_list(&pipe);
-				break;
+				break ;
 			}
 		}
 		if (yesh_pipe && i < yesh_pipe + 1)
