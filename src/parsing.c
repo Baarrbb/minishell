@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/11 20:40:27 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/12 15:25:33 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,6 +187,8 @@ static int	get_nb_args(char *line)
 			i++;
 		while(!is_space(line[i]) && line[i])
 		{
+			if (line[i] == '>' || line[i] == '<')
+				break;
 			if (line[i] == '\'' && line[i])
 			{
 				i++;
@@ -201,6 +203,8 @@ static int	get_nb_args(char *line)
 			}
 			i++;
 		}
+		if (line[i] == '>' || line[i] == '<')
+			break;
 		count++;
 		while (is_space(line[i]) && line[i])
 			i++;
@@ -223,6 +227,8 @@ static char **fill_args_w_quote(char **args, char *line)
 			line++;
 		while(!is_space(line[i]) && line[i])
 		{
+			if (line[i] == '>' || line[i] == '<')
+				break;
 			if (line[i] == '\'' && line[i])
 			{
 				i++;
@@ -237,6 +243,8 @@ static char **fill_args_w_quote(char **args, char *line)
 			}
 			i++;
 		}
+		if (line[i] == '>' || line[i] == '<')
+			break;
 		args[j] = ft_substr(line, 0, i);
 		j++;
 		line += i;
@@ -277,15 +285,18 @@ static char	**get_cmd(char *line)
 	}
 	else
 	{
-		// i = 0;
-		// while (line[i] != '\'' && line[i] != '\"')
-		// 	i++;
-		// line_wo_quote = ft_substr(line, 0, i - 1);
-		// tmp = ft_split(line_wo_quote, ' ');
-		// quote = args_w_quote(line + i);
-		// free(line_wo_quote);
-		// char **good_quote = all_args_w_quote(tmp, quote);
-		char **good_quote = args_w_quote(line);
+		char **good_quote = 0;
+		// if (ft_strchr(line, '<') || ft_strchr(line, '>'))
+		// {
+		// 	int i = 0;
+		// 	while (line[i] != '<' && line[i] != '>')
+		// 		i++;
+		// 	// char *line_wo_redir = ft_substr(line, i, ft_strlen(line));
+		// 	// good_quote = args_w_quote(line_wo_redir);
+			
+		// }
+		// else
+			good_quote = args_w_quote(line);
 		return (good_quote);
 	}
 }
@@ -320,17 +331,17 @@ static char	**get_cmd_w_redir(char *line)
 // metacharacters : | & ; ( ) < > ; $
 static int	is_spe_char(int c)
 {
-	printf("is_spe_char\n");
+	// printf("is_spe_char\n");
 	// ajouter  c == '$' ????
-	if (c == '>' || c == '<' || c == '\'' || c == '\"'
-		|| c == '|')
+	if (c == '>' || c == '<' || c == '|') //|| c == '\'' || c == '\"'
+		
 		return (1);
 	return (0);
 }
 
 static int	file_char(int c)
 {
-	printf("file_char\n");
+	// printf("file_char\n");
 	if (ft_isprint(c) && !is_spe_char(c) && c != ' ')
 		return (1);
 	return (0);
@@ -586,6 +597,8 @@ int	main(int ac, char **av, char **envp)
 	{
 		line = readline("Minishell $ ");
 		rl_on_new_line();
+		if (!line)
+			//exit
 		if (line[0] != ' ' && line[0] != 0)
 			add_history(line);
 		yesh_pipe = count_pipe(line);

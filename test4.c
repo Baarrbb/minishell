@@ -202,6 +202,8 @@ static int	get_nb_args(char *line)
 			i++;
 		while(!is_space(line[i]) && line[i])
 		{
+			if (line[i] == '>' || line[i] == '<')
+				break;
 			if (line[i] == '\'' && line[i])
 			{
 				i++;
@@ -216,6 +218,8 @@ static int	get_nb_args(char *line)
 			}
 			i++;
 		}
+		if (line[i] == '>' || line[i] == '<')
+				break;
 		count++;
 		while (is_space(line[i]) && line[i])
 			i++;
@@ -240,6 +244,8 @@ static char **fill_args_w_quote(char **args, char *line)
 			line++;
 		while(!is_space(line[i]) && line[i])
 		{
+			if (line[i] == '>' || line[i] == '<')
+				break;
 			if (line[i] == '\'' && line[i])
 			{
 				i++;
@@ -254,6 +260,8 @@ static char **fill_args_w_quote(char **args, char *line)
 			}
 			i++;
 		}
+		if (line[i] == '>' || line[i] == '<')
+				break;
 		args[j] = ft_substr(line, 0, i);
 		j++;
 		line += i;
@@ -280,7 +288,7 @@ static char **args_w_quote(char *line)
 
 int main()
 {
-	char *test = "\"\"sed -n   p'sdsdf'd  kk'dsf\"sdf df' 'dsf  df'sdd  \"s/,   $/./p\"   ";
+	char *test = "sed -n   p'sdsdf'd  kk'dsf\"sdf df' 'dsf  df'sdd  \"s/,   $/./p\" > out  ";
 	printf("nb args %d\n", get_nb_args(test));
 	char **quote = args_w_quote(test);
 	printf("BIEN GERE ?? \n\n");
