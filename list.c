@@ -1,5 +1,6 @@
 #include <stdio.h>
 int	main(void)
 {
-	printf("test");
+	while (1)
+		sleep(1);
 }

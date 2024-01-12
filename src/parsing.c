@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/11 14:57:13 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/12 12:15:54 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -375,6 +375,7 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 		cmd->cmd = get_cmd(line);
 		cmd->path_cmd = check_exist_cmd(cmd->cmd[0], cmd);
 		is_builtin(cmd);
+		cmd->tests = -60;
 	}
 	len = ft_strlen(line);
 	if (ft_strnstr(line, ">", len) || ft_strnstr(line, "<", len))
@@ -438,9 +439,23 @@ static int	count_pipe(char *line)
 
 volatile sig_atomic_t sigint_received = 0;
 
-void handle_sigint(int sig) {
-    sigint_received = 1;
-	printf("\nSIGINT received. Type a new command or 'exit' to quit.\n");
+void handle_sigint(int sig) 
+{
+	sigint_received = 1;
+	(void)sig;
+	write(1, "\n", 1);
+	rl_on_new_line();
+	rl_replace_line("", 0);
+	rl_redisplay();
+}
+void	handle_sigout(int sig)
+{
+	sigint_received = 1;
+	(void)sig;
+	write(1, "\n", 1);
+	rl_on_new_line();
+	rl_replace_line("", 0);
+	rl_redisplay();
 }
 
 int	main(int ac, char **av, char **envp)
@@ -453,29 +468,35 @@ int	main(int ac, char **av, char **envp)
 	int		i;
 	int		yesh_pipe;
 	struct sigaction sa;
+	struct sigaction sb;
 
-    sa.sa_handler = handle_sigint;
-    sa.sa_flags = 0; // or SA_RESTART to automatically restart certain interrupted system calls
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGINT, &sa, NULL);
 	(void)ac;
 	(void)av;
 	i = -1;
 	pipe = 0;
 	cmd = 0;
 	redir = 0;
+	//signal(SIGINT, &handle_sigint);
+	write(1, "gere signal1", 12);
+	sb.sa_handler = handle_sigout;
+	sb.sa_flags = 0;
+	sa.sa_handler = handle_sigint;
+	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
+	//sigemptyset(&sb.sa_mask);
 	while (1)
 	{
+   		sigaction(SIGINT, &sa, NULL);
+		//sigaction(SIGQUIT, &sb, NULL);
 		line = readline("Minishell $ ");
 		rl_on_new_line();
 		if (line[0] != ' ' && line[0] != 0)
 			add_history(line);
 		if (sigint_received)
 		{
-			printf("test\n");
-			rl_redisplay();
 			sigint_received = 0;
 		}
+		
 		yesh_pipe = count_pipe(line);
 		command = ft_split(line, '|');
 		while (command[++i])

@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/11 10:37:05 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/12 12:41:51 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ typedef struct s_cmd
 	char			*path_cmd;
 	int				exit_val;
 	int				background;
+	pid_t			tests;
 	t_redir			*redir;
 	struct s_cmd	*next;
 }	t_cmd;
@@ -70,4 +71,7 @@ void	builtingo(t_cmd *cmd, char **env);
 void	error_exec(t_cmd *comands);
 void	error_managing(t_cmd *command);
 void	sigint_handler(int sig);
+void	handle_sigint(int sig);
+void	heredoc(void);
+
 #endif

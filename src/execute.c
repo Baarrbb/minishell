@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/11 12:04:30 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/12 12:43:48 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,6 +156,11 @@ void	redirections_in(t_cmd *redirec, int fd)
 			dup2(fd, 0);
 			//close(fd);
 		}
+		if (newpointer->redir->in_read)
+		{
+			printf("test\n\n\n\n\n");
+			heredoc();
+		}
 		newpointer->redir = newpointer->redir->next;
 	}
 	redirec->redir = oldredir;
@@ -252,6 +257,8 @@ void execute_test(t_cmd *pipes, char **envp)
 	pipeindex = 0;
 	while (command) 
 	{
+		signal(SIGINT, SIG_IGN);	
+		signal(SIGQUIT, SIG_IGN);
 		if (command->builtin)
 			builtingo(command, envp);
 		else
@@ -260,6 +267,9 @@ void execute_test(t_cmd *pipes, char **envp)
 			if (pid == 0) 
 			{
 				//not last command
+				write(1, "gere signal2", 12);
+				signal(SIGINT, SIG_DFL);
+				signal(SIGQUIT, SIG_DFL);
 				redirections_pipe_in(command, pipeindex, pipefds);
 				//redirction out
 				redirections_out(command, fd);
@@ -296,4 +306,16 @@ void execute_test(t_cmd *pipes, char **envp)
 		pipes->exit_val = waitpid(pid, &status, 0);
 		i++;
 	}
+	if (WIFEXITED(status))
+	{
+		printf("Le processus enfant s'est terminé normalement avec le code %d\n", WEXITSTATUS(status));
+		//signal(SIGINT, handle_sigint);
+	}
+	else if (WIFSIGNALED(status)) 
+	{
+		printf("Le processus enfant a été terminé par le signal %d\n", WTERMSIG(status));
+		//signal(SIGINT, handle_sigint);
+	}
+	if (WTERMSIG(status) == SIGINT) 
+		printf("C'était un SIGINT (Ctrl-C)\n");
 }
