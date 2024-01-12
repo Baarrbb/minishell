@@ -96,5 +96,3 @@ cat test > out1 out2
 cat test > out1 out2 > out6
 
 out2 = arg de cat et out6 creer avecx sortie cat
-
-"catdsadsa" > dsad dsadsa

@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/12 15:25:33 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/12 20:37:17 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,6 @@ char	*trim_space(char *line)
 		while (*line == ' ' || *line == '	')
 			line++;
 	}
-	printf("DANS TRIM_SPACE\n");
 	return (line);
 }
 
@@ -284,21 +283,7 @@ static char	**get_cmd(char *line)
 			return (ft_split(line, ' '));
 	}
 	else
-	{
-		char **good_quote = 0;
-		// if (ft_strchr(line, '<') || ft_strchr(line, '>'))
-		// {
-		// 	int i = 0;
-		// 	while (line[i] != '<' && line[i] != '>')
-		// 		i++;
-		// 	// char *line_wo_redir = ft_substr(line, i, ft_strlen(line));
-		// 	// good_quote = args_w_quote(line_wo_redir);
-			
-		// }
-		// else
-			good_quote = args_w_quote(line);
-		return (good_quote);
-	}
+		return (args_w_quote(line));
 }
 
 static char	**get_cmd_w_redir(char *line)
@@ -334,7 +319,6 @@ static int	is_spe_char(int c)
 	// printf("is_spe_char\n");
 	// ajouter  c == '$' ????
 	if (c == '>' || c == '<' || c == '|') //|| c == '\'' || c == '\"'
-		
 		return (1);
 	return (0);
 }
@@ -366,6 +350,44 @@ static void	error_syntax(char *line)
 	printf("%s`%s\'\n", ERROR_MSG, token);
 }
 
+static char	*test_filename(char *line)
+{
+	int	i;
+	int	count;
+
+	i = 0;
+	count = 0;
+	while(!is_space(line[i]) && line[i])
+	{
+		if (line[i] == '\'' && line[i])
+		{
+			i++;
+			while (line[i] != '\'')
+				i++;
+		}
+		else if (line[i] == '\"' && line[i])
+		{
+			i++;
+			while (line[i] != '\"' && line[i])
+				i++;
+		}
+		else
+		{
+			while (file_char(line[i]))
+			{
+				count++;
+				i++;
+			}
+			if (count == 0)
+			{
+				error_syntax(line);
+				return (0);
+			}
+		}
+	}
+	return(ft_substr(line, 0, i));
+}
+
 static char	*get_filename(t_redir *redir, char *line)
 {
 	printf("get_filename\n");
@@ -376,6 +398,8 @@ static char	*get_filename(t_redir *redir, char *line)
 
 	i = -1;
 	count = 0;
+	if (!redir->out && !redir->in && !redir->out_end && !redir->in_read)
+		return (0);
 	if (redir->out || redir->in)
 		line++;
 	else if (redir->out_end || redir->in_read)
@@ -383,26 +407,28 @@ static char	*get_filename(t_redir *redir, char *line)
 	while (line[++i] == ' ' && *line)
 		line++;
 	i = -1;
-	while (file_char(line[++i]))
-		count++;
-	if (count == 0)
-	{
-		error_syntax(line);
-		return (0);
-	}
-	filename = ft_calloc((count + 1), sizeof(char));
-	if (!filename)
-		return (0);
-	i = 0;
-	while (file_char((int)*line))
-	{
-		filename[i] = (int)*line;
-		line++;
-		i++;
-	}
-	filetrim = ft_strtrim(filename, " ");
-	free(filename);
-	redir->filename = filetrim;
+	// while (file_char(line[++i]))
+	// 	count++;
+	// if (count == 0)
+	// {
+	// 	error_syntax(line);
+	// 	return (0);
+	// }
+	// filename = ft_calloc((count + 1), sizeof(char));
+	// if (!filename)
+	// 	return (0);
+	// i = 0;
+	// while (file_char((int)*line))
+	// {
+	// 	filename[i] = (int)*line;
+	// 	line++;
+	// 	i++;
+	// }
+	// filetrim = ft_strtrim(filename, " ");
+	// free(filename);
+	// redir->filename = filetrim;
+	redir->filename = test_filename(line);
+	line += ft_strlen(redir->filename);
 	if (*line == 0)
 		return (0);
 	return (line);
@@ -429,16 +455,37 @@ static char	*get_redir(t_redir *cmd, char *line)
 	return (line);
 }
 
-static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
+static char	*get_new_arg(char *line)
+{
+	printf("get_new_arg\n");
+	int		i;
+	char	*arg;
+
+	line = trim_space(line);
+	i = 0;
+	while (!is_spe_char(line[i]) && line[i] != ' ' && line[i])
+		i++;
+	arg = ft_calloc(i + 1, sizeof(char));
+	if (!arg)
+		return (0);
+	i = -1;
+	while (!is_spe_char(line[++i]) && line[i] != ' ' && line[i])
+		arg[i] = line[i];
+	return (arg);
+}
+
+static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 {
 	printf("init_redir\n");
 	t_redir	*new;
+	t_cmd	*new_cmd;
 	char	*linetrim;
 	char	*tmp;
 	int		i;
 
 	linetrim = ft_strdup(line);
 	tmp = linetrim;
+	new_cmd = 0;
 	while (*linetrim)
 	{
 		i = -1;
@@ -454,26 +501,59 @@ static	int	init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 			return (0);
 		}
 		linetrim = get_filename(new, linetrim);
-		if (!new->filename)
+		if (!new->filename && !cmd)
 		{
 			free(new);
 			free(tmp);
 			return (0);
 		}
+		if (!new->filename)
+			break ;
 		new->next = 0;
 		ft_lstadd_back(&redir, new);
-		linetrim = trim_space(linetrim);
 		if (ft_strlen(linetrim) == 0)
 			break ;
-		if (linetrim[0] != '>' && linetrim[0] != '<' && ft_strlen(linetrim))
+		linetrim = trim_space(linetrim);
+		if (!cmd->cmd && linetrim[0] != '>' && linetrim[0] != '<')
 		{
 			fill_cmd(cmd, linetrim, envp);
 			linetrim += ft_strlen(cmd->cmd[0]);
 		}
+		else if (linetrim[0] != '>' && linetrim[0] != '<' && ft_strlen(linetrim))
+		{
+			new_cmd = ft_calloc(1, sizeof(t_cmd));
+			if (!new_cmd)
+				return (0);
+			int	i = 0;
+			while (cmd->path[i])
+				i++;
+			new_cmd->path = ft_calloc(i + 1, sizeof(char *));
+			if (!new_cmd->path)
+				return (0);
+			i = -1;
+			while (cmd->path[++i])
+				new_cmd->path[i] = ft_strdup(cmd->path[i]);
+			i = 0;
+			while (cmd->cmd[i])
+				i++;
+			new_cmd->cmd = ft_calloc((i + 2), sizeof(char *));
+			if (!new_cmd->cmd)
+				return (0);
+			i = -1;
+			while (cmd->cmd[++i])
+				new_cmd->cmd[i] = ft_strdup(cmd->cmd[i]);
+			new_cmd->cmd[i] = get_new_arg(linetrim);
+			linetrim += ft_strlen(new_cmd->cmd[i]);
+			new_cmd->builtin = cmd->builtin;
+			if (cmd->path_cmd)
+				new_cmd->path_cmd = ft_strdup(cmd->path_cmd);
+			free_struct(cmd);
+			cmd = new_cmd;
+		}
 	}
 	cmd->redir = redir;
 	free(tmp);
-	return (1);
+	return (cmd);
 }
 
 static void	is_builtin(t_cmd *cmd)
@@ -519,8 +599,9 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 		fill_cmd(cmd, line, envp);
 	len = ft_strlen(line);
 	if (ft_strnstr(line, ">", len) || ft_strnstr(line, "<", len))
-	{
-		if (!init_redir(cmd, redir, line, envp))
+	{	
+		cmd = init_redir(cmd, redir, line, envp);
+		if (!cmd)
 		{
 			free_struct(cmd);
 			return (0);
@@ -597,7 +678,7 @@ int	main(int ac, char **av, char **envp)
 	{
 		line = readline("Minishell $ ");
 		rl_on_new_line();
-		if (!line)
+		// if (!line)
 			//exit
 		if (line[0] != ' ' && line[0] != 0)
 			add_history(line);
