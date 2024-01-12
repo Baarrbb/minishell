@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/12 12:41:51 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/12 19:40:24 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@ typedef struct s_cmd
 	char			*path_cmd;
 	int				exit_val;
 	int				background;
-	pid_t			tests;
 	t_redir			*redir;
 	struct s_cmd	*next;
 }	t_cmd;
@@ -56,6 +55,7 @@ void	free_char_tab(char **tab);
 void	free_list(t_cmd **list);
 void	ft_lstadd_back(t_redir **lst, t_redir *new);
 void	ft_lstadd_back_bis(t_cmd **lst, t_cmd *new);
+char	*strjoin(char *dst, char *s);
 
 /*  TO REMOVE */
 void	print_struct(t_cmd *cmd);
@@ -64,14 +64,15 @@ void	print_linked_list(t_cmd *pipe);
 /*test*/
 void	execute_test(t_cmd *pipe, char **envp);
 int		check_commands(t_cmd *commands);
-void	is_a_variable(t_cmd *testons, char **envp);
-int		handle_quoting(t_cmd *quoting);
+void	replace_variables(t_cmd *testons, char **envp);
+int		handle_quoting(t_cmd *quoting, char **env);
 int		count_struct(t_cmd *list);
 void	builtingo(t_cmd *cmd, char **env);
 void	error_exec(t_cmd *comands);
 void	error_managing(t_cmd *command);
 void	sigint_handler(int sig);
 void	handle_sigint(int sig);
-void	heredoc(void);
+void	heredoc(t_cmd *test);
+int		etat_mort(t_cmd *cmd, char **our_envp);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/12 12:43:48 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/12 15:22:57 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,7 @@ void	redirections_in(t_cmd *redirec, int fd)
 		if (newpointer->redir->in_read)
 		{
 			printf("test\n\n\n\n\n");
-			heredoc();
+			heredoc(newpointer);
 		}
 		newpointer->redir = newpointer->redir->next;
 	}
@@ -282,6 +282,7 @@ void execute_test(t_cmd *pipes, char **envp)
 				//gestion d'erreur
 				error_managing(command);
 				//execution
+				printf("testchef\n");
 				if (execve(command->path_cmd, command->cmd, envp) < 0)
 				{
 					perror(command->path_cmd);
@@ -294,10 +295,13 @@ void execute_test(t_cmd *pipes, char **envp)
 				exit(EXIT_FAILURE);
 			}
 		}
+		printf("testchef\n");
 		command = command->next;
 		pipeindex += 2;
 	}
 	//close pipe
+
+	printf("testchef\n");
 	close_all_pipes(numPipes, pipefds);
 	//wait for children & exitval
 	i = 0;

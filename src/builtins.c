@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 16:37:27 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/09 17:40:45 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/12 16:18:11 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,11 @@ void	our_unset(char **cmds, char **copy_env)
 	i = 0;
 }
 
+void our_exit()
+{
+	exit(EXIT_SUCCESS);
+}
+
 /*void	exit()
 {
 	free_char_tab(command);
@@ -119,5 +124,5 @@ void	builtingo(t_cmd *cmd, char **env)
 	else if (!ft_strncmp(cmd->cmd[0], "env", ft_strlen("env")))
 		cmd->builtin = 1;
 	else if (!ft_strncmp(cmd->cmd[0], "exit", ft_strlen("exit")))
-		cmd->builtin = 1;
+		our_exit();
 }
