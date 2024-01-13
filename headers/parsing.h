@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/11 16:53:25 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/13 19:19:18 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,17 @@
 #include <readline/history.h>
 #include "libft.h"
 #include <unistd.h>
+#include <linux/limits.h>
+#include <string.h>
+#include <errno.h>
+
+#include <asm-generic/errno-base.h> // pour les erreurs chdri  normalement dans unistd.h mais chez moi trouve pas 
 
 # define BOLD "\x1b[1m"
 # define RED "\x1b[31m"
 # define RESET "\x1b[0m"
 # define ERROR_MSG "bash: syntax error near unexpected token "
+# define ERROR_CD "bash: cd:"
 
 typedef struct s_redir
 {
@@ -52,6 +58,7 @@ void	ft_lstadd_back(t_redir **lst, t_redir *new);
 void	ft_lstadd_back_bis(t_cmd **lst, t_cmd *new);
 void	free_struct(t_cmd *cmd);
 int		return_free(char *tofree, int ret);
+char	*get_ourenv(char* tofind, char **ourenv);
 
 
 /*  TO REMOVE */

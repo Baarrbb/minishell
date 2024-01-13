@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/12 22:45:31 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/13 20:48:14 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,32 @@ int	is_space(int c)
 {
 	if (c == ' ' || c == '\t')
 		return (1);
+	return (0);
+}
+
+char *get_ourenv(char* tofind, char **ourenv)
+{
+	int	i;
+	char	*newstr;
+
+	i = 0;
+	newstr = malloc(2 * sizeof(char));
+	newstr[0] = '?';
+	newstr[1] = '\0';
+	while (ourenv[i])
+	{
+		if (ft_strncmp(ourenv[i], tofind, ft_strlen(tofind)) == 0)
+		{
+			if (ourenv[i][ft_strlen(tofind)] == '=')
+			{
+				free(newstr);
+				return (&ourenv[i][ft_strlen(tofind) + 1]);
+			}
+		}
+		i++;
+	}
+	if (ft_strncmp(tofind, newstr, ft_strlen(newstr)) == 0)
+		free(newstr);
 	return (0);
 }
 
@@ -138,7 +164,8 @@ static char	**get_path(char **envp)
 			break ;
 		}
 	}
-	free_char_tab(del_path);
+	if (del_path)
+		free_char_tab(del_path);
 	return (path);
 }
 
@@ -298,11 +325,7 @@ static char	**args_w_quote(char *line)
 static char	**get_cmd(char *line)
 {
 	printf("get_cmd\n");
-	char	**tmp;
-	char	**quote;
 
-	tmp = 0;
-	quote = 0;
 	if (!ft_strchr(line, '\'') && !ft_strchr(line, '\"'))
 	{
 		if (ft_strchr(line, '<') || ft_strchr(line, '>'))
@@ -419,10 +442,8 @@ static char	*get_filename(t_redir *redir, char *line)
 {
 	printf("get_filename\n");
 	int		i;
-	int		count;
 
 	i = -1;
-	count = 0;
 	if (!redir->out && !redir->in && !redir->out_end && !redir->in_read)
 		return (0);
 	if (redir->out || redir->in)
@@ -485,13 +506,11 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 	t_redir	*new;
 	char	*linetrim;
 	char	*tmp;
-	int		i;
 
 	linetrim = ft_strdup(line);
 	tmp = linetrim;
 	while (*linetrim)
 	{
-		i = -1;
 		new = ft_calloc(1, sizeof(t_redir));
 		if (!new)
 			return (0);
