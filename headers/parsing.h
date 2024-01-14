@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/13 19:19:18 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/14 16:16:08 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@
 # define BOLD "\x1b[1m"
 # define RED "\x1b[31m"
 # define RESET "\x1b[0m"
-# define ERROR_MSG "bash: syntax error near unexpected token "
-# define ERROR_CD "bash: cd:"
+# define ERROR_MSG "minishell: syntax error near unexpected token "
+# define ERROR_CD "minishell: cd:"
 
 typedef struct s_redir
 {
