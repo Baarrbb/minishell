@@ -5,13 +5,12 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/13 16:40:53 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/13 21:51:33 by bsuc             ###   ########.fr       */
+/*   Created: 2024/01/15 20:23:33 by bsuc              #+#    #+#             */
+/*   Updated: 2024/01/15 20:31:57 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parsing.h"
-
 
 static int	get_nb_args(t_cmd *cmd)
 {
@@ -52,64 +51,57 @@ static void	refresh_env_pwd(char ***env, char *oldpwd)
 	}
 }
 
-static void	move_cd(char *path, char **env)
+static void	ret_cd(int ret, char **env, char *oldpwd)
 {
-	char	oldpwd[PATH_MAX];
-
-	getcwd(oldpwd, PATH_MAX);
-	if (chdir(path) != 0)
-	{
-		if (errno == EACCES)
-			printf("%s %s: %s\n", ERROR_CD, path, strerror(errno));//ok mauvaise permission
-		if (errno == EFAULT)
-			printf("%s %s: %s\n", ERROR_CD, path, strerror(errno));
-		if (errno == EIO)
-			printf("%s %s: %s\n", ERROR_CD, path, strerror(errno));
-		if (errno == ELOOP)
-			printf("%s %s: %s\n", ERROR_CD, path, strerror(errno));
-		if (errno == ENAMETOOLONG)
-			printf("%s %s: %s\n", ERROR_CD, path, strerror(errno)); // ok
-		if (errno == ENOENT)
-			printf("%s %s: %s\n", ERROR_CD, path, strerror(errno)); //ok repertoire n'existe pas "jexistepas"
-		if (errno == ENOMEM)
-			printf("%s %s: %s\n", ERROR_CD, path, strerror(errno));
-		if (errno == ENOTDIR)
-			printf("%s %s: %s\n", ERROR_CD, path, strerror(errno));//ok pas un repertoire "/bin/bash"
-		if (errno == EBADF)
-			printf("%s %s: %s\n", ERROR_CD, path, strerror(errno));
-	}
-	else
+	if (ret == 0)
 		refresh_env_pwd(&env, oldpwd);
+	else if (ret < 0)
+		perror(ERROR_CD);
+	else
+		return ;
 }
 
-static	char	*recup_home_wo_home(void)
+static void	move_cd(char *path, char **env, char *oldpwd)
 {
-	
+	int		ret;
+
+	ret = 1;
+	if (!path || !ft_strncmp(path, "--\0", 3) || !ft_strncmp(path, "~\0", 2))
+	{
+		if (get_ourenv("HOME", env))
+			ret = chdir(get_ourenv("HOME", env));
+		else
+			printf("%s HOME not set\n", ERROR_CD);
+	}
+	else if (!ft_strncmp(path, "-\0", 2) && get_ourenv("OLDPWD", env))
+	{
+		printf("%s\n", get_ourenv("OLDPWD", env));
+		ret = chdir(get_ourenv("OLDPWD", env));
+	}
+	else if (!ft_strncmp(path, "-\0", 2) && !get_ourenv("OLDPWD", env))
+		printf("%s OLDPWD not set\n", ERROR_CD);
+	else if (path[0] == '-' && path[1] == '-' && path[3])
+		printf("%s: --: invalid option\n", ERROR_CD);
+	else if (path[0] == '-' && path[1])
+		printf("%s: -%c: invalid option\n", ERROR_CD, path[1]);
+	else
+		ret = chdir(path);
+	ret_cd(ret, env, oldpwd);
 }
 
 void	our_cd(t_cmd *cmd, char **env)
 {
 	int		nb_args;
-	char	*home;
 	char	*arg;
+	char	oldpwd[PATH_MAX];
 
 	nb_args = get_nb_args(cmd);
-	home = 0;
 	if (nb_args > 2)
 	{
 		printf("%s too many arguments\n", ERROR_CD);
 		return ;
 	}
+	getcwd(oldpwd, PATH_MAX);
 	arg = cmd->cmd[1];
-	home = get_ourenv("HOME", env);
-	printf("HOME %s\n", home);
-	if (nb_args == 1 && !home)
-		printf("%s HOME not set\n", ERROR_CD);
-	else if ((nb_args == 1 || !ft_strncmp(arg, "~", ft_strlen(arg))) && home)
-		move_cd(home, env);
-	else if (home)
-		move_cd(arg, env);
-	else
-		recup_home_wo_home(); // recuperer home
+	move_cd(arg, env, oldpwd);
 }
-

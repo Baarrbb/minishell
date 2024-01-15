@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/14 16:16:08 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/15 17:01:40 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef struct s_redir
 
 typedef struct s_cmd
 {
+	char			*line;
 	char			**path;
 	char			**cmd;
 	int				builtin;

@@ -1,0 +1,34 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    export.                                            :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2024/01/15 20:32:20 by bsuc              #+#    #+#              #
+#    Updated: 2024/01/15 20:45:52 by bsuc             ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+static char	*remalloc_env(char **env)
+{
+	
+}
+
+static void	put_var_env(char ***env, char *arg)
+{
+	
+}
+
+void	our_export(t_cmd *cmd, char **env)
+{
+	int	i;
+
+	i = 0;
+	while (cmd->cmd[++i])
+	{
+		if (ft_strchr(cmd->cmd[i], '='))
+			put_var(&env, cmd->cmd[i]);
+	}
+}
+

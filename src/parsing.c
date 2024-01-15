@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/13 20:48:14 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/15 17:04:38 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -619,6 +619,7 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	if (!cmd)
 		return (0);
 	ft_memset(cmd, 0, sizeof(t_cmd));
+	cmd->line = line;
 	if (line[0] != '<' && line[0] != '>')
 		fill_cmd(cmd, line, envp);
 	len = ft_strlen(line);
