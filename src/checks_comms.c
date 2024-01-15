@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/04 19:15:32 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/12 21:15:19 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/15 19:54:26 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,19 +81,23 @@ char	*add_to(char *command, char *result, int ex_len, int len)
 	return (newstr);
 }
 
-char *get_ourenv(char* tofind, char **ourenv)
+char *get_ourenv(char* tofind, char **ourenv, char *sortie)
 {
 	int	i;
 
 	i = 0;
-	while (ourenv[i])
+	if (ourenv)                                                                                                                                         
 	{
-		//printf("our env: %s\n", ourenv[i]);
-		if (ft_strncmp(ourenv[i], tofind, ft_strlen(tofind)) == 0)
-			if (ourenv[i][ft_strlen(tofind)] == '=')
-				return (&ourenv[i][ft_strlen(tofind) + 1]);
-		i++;
+		while (ourenv[i])
+		{
+			if (ft_strncmp(ourenv[i], tofind, ft_strlen(tofind)) == 0)
+				if (ourenv[i][ft_strlen(tofind)] == '=')
+					return (ft_strdup(&ourenv[i][ft_strlen(tofind) + 1]));
+			i++;
+		}
 	}
+	//if (tofind)
+		//return (sortie);
 	return (NULL);
 }
 
@@ -137,37 +141,35 @@ static char	*remove_dollar(char *str)
 	return (newstr);	
 }
 
-char	*sub_strs(char *str, int pos, char **our_envp)
+char	*sub_strs(char *str, int pos, char **our_envp, char *sortie)
 {
 	int		i;
 	char	*variable;
 	char	*result;
 
 	i = pos;
-	variable = 0;
-	while (str[++i])
+	if (str[i + 1] == '?')
+		i = i + 2;
+	else
 	{
-		if (isntaletter(str[i]) == 0)
+		while (str[++i])
 		{
-			printf("EST RENTRE\n");
-			variable = ft_substr(str, pos + 1, i - pos - 1);
-			break ;
+			if (isntaletter(str[i]) == 0)
+				break ;
 		}
 	}
-	if (!variable)
-		variable = ft_substr(str, pos + 1, i - 1);
-	printf("1our var = %s\n", variable);
-	result = get_ourenv(variable, our_envp);
-	printf("2our var = %s\n", variable);
+	variable = ft_substr(str, (pos + 1), (i - pos - 1)); 
+	variable = strjoin(variable, "=");
+	result = get_ourenv(variable, our_envp, sortie);
 	if (result != NULL)
-		str = add_to(str, result, (i - pos), (ft_strlen(variable) + 1));
+		str = add_to(str, result, (i - pos), ft_strlen(result));
 	else
 		str = remove_dollar(str);
 	free(variable);
 	return (str); // error malloc bon code return 1 || // error malloc false code return 0
 }
 
-int	etat_mort(t_cmd *cmd, char **our_envp)
+int	etat_mort(t_cmd *cmd, char **our_envp, char *sortie)
 {
 	int i;
 	int	etat;
@@ -176,16 +178,15 @@ int	etat_mort(t_cmd *cmd, char **our_envp)
 	i = 0;
 	j = 0;
 	etat = -1;
-	printf("cmd : debut start everything %s\n\n\n", cmd->cmd[i]);
 	while (cmd->cmd[i])
 	{
 		j = 0;
 		while (cmd->cmd[i][j])
 		{
 			etat = searching_etat(cmd->cmd[i][j], etat);
-			if (cmd->cmd[i][j] == '$' && etat != 2)
+			if (cmd->cmd[i][j] == '$' && etat != 2 && cmd->cmd[i][j - 1] != '\\')
 			{
-				cmd->cmd[i] = sub_strs(cmd->cmd[i], j, our_envp);
+				cmd->cmd[i] = sub_strs(cmd->cmd[i], j, our_envp, sortie);
 				j = 0;
 				if (cmd->cmd[i] == 0)
 					return (0); // error malloc false code return 0

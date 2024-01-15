@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 16:37:27 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/12 16:18:11 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/15 16:19:57 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int	good_flag(char *arguments)
 
 	i = 1;
 	if (!arguments)
-		return (0);
+		return (1);
 	if (arguments[0] != '-')
 		return (1);
 	while (arguments[i])
@@ -36,12 +36,12 @@ void	our_echo(char **cmds_args)
 	int	i;
 
 	i = 1;
-	next_line = 0;
+	next_line = 1;
 	if (cmds_args[1] == NULL)
 		return ;
 	while (good_flag(cmds_args[i]) == 0)
 	{
-		next_line = 1;
+		next_line = 0;
 		i++;
 	}
 	while (cmds_args[i])
@@ -88,7 +88,7 @@ void	our_unset(char **cmds, char **copy_env)
 		j = 1;
 		while (cmds[j])
 		{
-			if (ft_strncmp(copy_env[i], cmds[j], ft_strlen(cmds[2])) == 0)
+			if (ft_strncmp(copy_env[i], cmds[j], ft_strlen(cmds[j])) == 0)
 				if (copy_env[i][ft_strlen(cmds[j])] == '=')
 					remove_elem(&copy_env, i);
 			j++;

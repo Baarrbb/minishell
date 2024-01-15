@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/12 18:53:35 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/15 19:49:48 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -579,7 +579,7 @@ volatile sig_atomic_t sigint_received = 0;
 
 void handle_sigint(int sig) 
 {
-	sigint_received = 1;
+	sigint_received = 2;
 	(void)sig;
 	write(1, "\n", 1);
 	rl_on_new_line();
@@ -610,6 +610,7 @@ int	main(int ac, char **av, char **envp)
 	char	**cpy_env;
 	struct sigaction sa;
 	struct sigaction sb;
+	int		sortie;
 
 	(void)ac;
 	(void)av;
@@ -617,6 +618,7 @@ int	main(int ac, char **av, char **envp)
 	pipe = 0;
 	cmd = 0;
 	redir = 0;
+	sortie = 0;
 	cpy_env = copy_env(envp);
 	//signal(SIGINT, &handle_sigint);
 	write(1, "gere signal1", 12);
@@ -625,16 +627,22 @@ int	main(int ac, char **av, char **envp)
 	sa.sa_handler = handle_sigint;
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
-	//sigemptyset(&sb.sa_mask);
+	sigemptyset(&sb.sa_mask);
 	//
 	while (1)
 	{
    		sigaction(SIGINT, &sa, NULL);
-		//sigaction(SIGQUIT, &sb, NULL);
 		line = readline("Minishell $ ");
+		if (!line)
+			our_exit();
 		rl_on_new_line();
 		if (line[0] != ' ' && line[0] != 0)
 			add_history(line);
+		if (sigint_received == 2)
+		{
+			sortie = 130;
+			sigint_received = 0;
+		}
 		yesh_pipe = count_pipe(line);
 		command = ft_split(line, '|');
 		while (command[++i])
@@ -658,13 +666,13 @@ int	main(int ac, char **av, char **envp)
 		}
 		else
 		{
-			if (handle_quoting(pipe, cpy_env) == 0)
-				return (printf("error\n"), 0); // error malloc idk what to do
-			check_commands(pipe);
-			
-			//replace_variables(pipe, cpy_env);
-			printf("yes\n");
-			execute_test(pipe, cpy_env);
+			if (pipe)
+			{
+				if (handle_quoting(pipe, cpy_env, sortie) == 0)
+					return (printf("error\n"), 0); // error malloc idk what to do
+				check_commands(pipe);
+				sortie = execute_test(pipe, cpy_env);
+			}
 			print_linked_list(pipe);
 			free(line);
 			free_char_tab(command);

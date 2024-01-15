@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/11 19:40:10 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/12 15:56:23 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/15 15:11:27 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@
 // 	return (i);
 // }
 
-void	heredoc(t_cmd *test)
+int	heredoc(t_cmd *test)
 {
 	int pipeheredoctest[2];
 	char *line;
@@ -47,7 +47,7 @@ void	heredoc(t_cmd *test)
 	if (pipe(pipeheredoctest) < 0)
 	{
 		perror("fail pipe");
-		return ;
+		return (0);
 	}
 	int pid = fork();
 	if (pid == 0)
@@ -76,7 +76,7 @@ void	heredoc(t_cmd *test)
 		int status;
 		waitpid(pid, &status, 0);
 		close(pipeheredoctest[1]);
-		dup2(pipeheredoctest[0], 0);
-		close(pipeheredoctest[0]);
+		return (pipeheredoctest[0]);
 	}
+	return (0);
 }

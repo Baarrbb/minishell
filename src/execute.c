@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/12 15:22:57 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/15 19:33:16 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,22 +147,20 @@ void	redirections_in(t_cmd *redirec, int fd)
 	t_redir	*oldredir;
 
 	newpointer = redirec;
+	fd = -1;
 	oldredir = newpointer->redir;
 	while (newpointer->redir != NULL)
 	{
+		if (fd != -1)
+			close(fd);
 		if (newpointer->redir->in)
-		{
 			fd = open(newpointer->redir->filename, O_RDONLY);
-			dup2(fd, 0);
-			//close(fd);
-		}
 		if (newpointer->redir->in_read)
-		{
-			printf("test\n\n\n\n\n");
-			heredoc(newpointer);
-		}
+			fd = heredoc(newpointer);
 		newpointer->redir = newpointer->redir->next;
 	}
+	dup2(fd, 0);
+	close(fd);
 	redirec->redir = oldredir;
 }
 
@@ -191,13 +189,13 @@ void	redirections_out(t_cmd *redirec, int fd)
 		{
 			fd = open(newpointer->redir->filename, O_CREAT | O_RDWR | O_TRUNC, 0000644);
 			dup2(fd, 1);
-			//close(fd);
+			close(fd);
 		}
 		else if (newpointer->redir->out_end)
 		{
 			fd = open(newpointer->redir->filename, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
 			dup2(fd, 1);
-			//close(fd);
+			close(fd);
 		}
 		newpointer->redir = newpointer->redir->next;
 	}
@@ -231,16 +229,17 @@ int	count_struct(t_cmd *list)
 	return (i);
 }
 
-void execute_test(t_cmd *pipes, char **envp) 
+int execute_test(t_cmd *pipes, char **envp) 
 {
 	t_cmd *command = (t_cmd *)pipes;
 	int numPipes = count_struct(command);
 	int status;
 	int i;
-	pid_t pid;
+	pid_t pid[numPipes];
 	int pipefds[2*numPipes];
 	int fd = -1;
 	int pipeindex;
+	int	j = 0;
 
 	i = 0;
 	//creation pipes create_pipes(*pipefds);
@@ -255,6 +254,7 @@ void execute_test(t_cmd *pipes, char **envp)
 	}
 	//forking
 	pipeindex = 0;
+	j = 0;
 	while (command) 
 	{
 		signal(SIGINT, SIG_IGN);	
@@ -263,11 +263,10 @@ void execute_test(t_cmd *pipes, char **envp)
 			builtingo(command, envp);
 		else
 		{
-			pid = fork();
-			if (pid == 0) 
+			pid[j] = fork();
+			if (pid[j] == 0) 
 			{
 				//not last command
-				write(1, "gere signal2", 12);
 				signal(SIGINT, SIG_DFL);
 				signal(SIGQUIT, SIG_DFL);
 				redirections_pipe_in(command, pipeindex, pipefds);
@@ -282,44 +281,42 @@ void execute_test(t_cmd *pipes, char **envp)
 				//gestion d'erreur
 				error_managing(command);
 				//execution
-				printf("testchef\n");
 				if (execve(command->path_cmd, command->cmd, envp) < 0)
 				{
 					perror(command->path_cmd);
 					exit(127);
 				}
 			}
-			else if (pid < 0)
+			else if (pid[j] < 0)
 			{
 				perror("dup2 error to do");
 				exit(EXIT_FAILURE);
 			}
 		}
-		printf("testchef\n");
 		command = command->next;
 		pipeindex += 2;
+		j++;
 	}
 	//close pipe
-
-	printf("testchef\n");
 	close_all_pipes(numPipes, pipefds);
 	//wait for children & exitval
 	i = 0;
-	while (i < numPipes + 1)
+	while (i < numPipes)
 	{
-		pipes->exit_val = waitpid(pid, &status, 0);
+		pipes->exit_val = waitpid(pid[i], &status, 0);
 		i++;
 	}
 	if (WIFEXITED(status))
 	{
-		printf("Le processus enfant s'est terminé normalement avec le code %d\n", WEXITSTATUS(status));
+		//printf("Le processus enfant s'est terminé normalement avec le code %d\n", WEXITSTATUS(status));
 		//signal(SIGINT, handle_sigint);
 	}
-	else if (WIFSIGNALED(status)) 
+	else if (WIFSIGNALED(status) == -6) 
 	{
-		printf("Le processus enfant a été terminé par le signal %d\n", WTERMSIG(status));
+		//printf("Le processus enfant a été terminé par le signal %d\n", WTERMSIG(status));
 		//signal(SIGINT, handle_sigint);
 	}
 	if (WTERMSIG(status) == SIGINT) 
-		printf("C'était un SIGINT (Ctrl-C)\n");
+		//printf("C'était un SIGINT (Ctrl-C)\n");
+	return (WEXITSTATUS(status));
 }

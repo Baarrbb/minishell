@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 14:02:42 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/11 13:48:06 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/15 19:33:34 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,5 +64,5 @@ void	error_managing(t_cmd *command)
 	no_cmd_slash(command);
 	is_a_directory(command);
 	no_such_file_or_directory(command);
-	command_not_found(command);
+	//command_not_found(command);
 }
