@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/08 16:37:27 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/16 17:03:38 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/16 18:53:40 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ void	our_echo(char **cmds_args)
 	while (cmds_args[i])
 	{
 		printf("%s", cmds_args[i]);
+		if (cmds_args[i + 1] != NULL)
+			printf(" ");
 		i++;
 	}
 	if (next_line == 1)
@@ -68,6 +70,7 @@ void remove_elem(char ***arr, int index)
 	int i;
 
 	i = index;
+	free((*arr)[i]);
 	while ((*arr)[i] != NULL)
 	{
 		(*arr)[i] = (*arr)[i+1];
@@ -97,13 +100,99 @@ void	our_unset(char **cmds, char **copy_env)
 	}
 	i = 0;
 }
+void    our_env(char **env)
+{
+    int    i;
+
+    i = -1;
+    if (env)
+    {
+        while (env[++i])
+            printf("%s\n", env[i]);
+    }
+}
+
+static int    get_size(char **env)
+{
+    int    i;
+
+    i = 0;
+    if (env)
+    {
+        while (env[i])
+            i++;
+    }
+    return (i);
+}
+
+static void    print_export_alpha(char **env)
+{
+    char    *tmp;
+    int        i;
+    int        j;
+    int        size;
+
+    size = get_size(env);
+    i = -1;
+    if (!env)
+        return ;
+    while (++i < size - 1)
+    {
+        j = -1;
+        while (++j < size - i - 1)
+        {
+            if (ft_strncmp(env[j], env[j + 1], ft_strlen(env[j])) > 0 )
+            {
+                tmp = env[j];
+                env[j] = env[j + 1];
+                env[j + 1] = tmp;
+            }
+        }
+    }
+    i = -1;
+    while (env[++i])
+        printf("declare -x %s\n", env[i]);
+}
+
+static void    put_var(char ***env, char *var)
+{
+    char    **tmp;
+    char    **new;
+    int        i;
+
+    tmp = *env;
+    new = ft_calloc(get_size(tmp) + 3, sizeof(char *));
+    if (!new)
+        return ;
+    i = -1;
+    while (tmp[++i])
+        new[i] = ft_strdup(tmp[i]);
+    new[i] = ft_strdup(var);
+    free_char_tab(*env);
+    *env = new;
+}
+
+void    our_export(t_cmd *cmd, char ***env)
+{
+    int    i;
+
+    i = 0;
+    while (cmd->cmd[++i])
+    {
+        if (ft_strchr(cmd->cmd[i], '='))
+            put_var(env, cmd->cmd[i]);
+    }
+    if (i == 1)
+        print_export_alpha(*env);
+    
+}
 
 void our_exit(t_cmd *everything)
 {
 	exit(EXIT_SUCCESS);
 }
 
-void	builtingo(t_cmd *cmd, char **env)
+void	builtingo(t_cmd *cmd, char ***env)
 {
 	if (!ft_strncmp(cmd->cmd[0], "echo", ft_strlen("echo")))
 		our_echo(cmd->cmd);
@@ -112,9 +201,10 @@ void	builtingo(t_cmd *cmd, char **env)
 	else if (!ft_strncmp(cmd->cmd[0], "pwd", ft_strlen("pwd")))
 		our_pwd();
 	else if (!ft_strncmp(cmd->cmd[0], "export", ft_strlen("export")))
-		cmd->builtin = 1;
+		//cmd->builtin = 1;	
+		our_export(cmd, env);
 	else if (!ft_strncmp(cmd->cmd[0], "unset", ft_strlen("unset")))
-		our_unset(cmd->cmd, env);
+		our_unset(cmd->cmd, *env);
 	else if (!ft_strncmp(cmd->cmd[0], "env", ft_strlen("env")))
 		cmd->builtin = 1;
 	else if (!ft_strncmp(cmd->cmd[0], "exit", ft_strlen("exit")))

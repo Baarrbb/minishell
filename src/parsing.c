@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/16 17:33:13 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/16 19:01:33 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -632,6 +632,7 @@ int	main(int ac, char **av, char **envp)
 	while (1)
 	{
    		sigaction(SIGINT, &sa, NULL);
+		signal(SIGQUIT, SIG_IGN);
 		line = readline("Minishell $ ");
 		if (!line)
 			our_exit();
@@ -671,7 +672,7 @@ int	main(int ac, char **av, char **envp)
 				if (handle_quoting(pipe, cpy_env, sortie) == 0)
 					return (printf("error\n"), 0); // error malloc idk what to do
 				check_commands(pipe);
-				sortie = execute_test(pipe, cpy_env);
+				sortie = execute_test(pipe, &cpy_env);
 				if (sortie == -1)
 					return (printf("error\n"), 0); // error malloc idk what to do
 			}

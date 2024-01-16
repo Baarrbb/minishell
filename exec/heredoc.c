@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/11 19:40:10 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/16 17:39:28 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/16 19:01:43 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ int	heredoc(t_cmd *test)
 	char *delimiter;
 
 	delimiter = test->redir->filename;
+	signal(SIGQUIT, SIG_IGN);
 	if (pipe(pipeheredoc) < 0)
 	{
 		perror("fail pipe");

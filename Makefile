@@ -6,13 +6,13 @@
 #    By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/29 23:25:19 by bsuc              #+#    #+#              #
-#    Updated: 2024/01/16 16:59:36 by ytouihar         ###   ########.fr        #
+#    Updated: 2024/01/16 18:00:14 by ytouihar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRC = src/parsing.c src/sanitize.c  src/manage_list.c src/execute.c src/checks_comms.c \
-	src/builtins.c src/errors.c src/signals.c src/heredoc.c src/quote_removing.c \
-	src/pipes.c src/redirections.c src/handle_var_utils.c src/handle_var.c
+SRC = src/parsing.c src/sanitize.c  src/manage_list.c exec/execute.c exec/checks_comms.c \
+	exec/builtins.c exec/errors.c exec/signals.c exec/heredoc.c exec/quote_removing.c \
+	exec/pipes.c exec/redirections.c exec/handle_var_utils.c exec/handle_var.c
 OBJ = $(SRC:.c=.o)
 NAME = minishell
 RM = rm -f

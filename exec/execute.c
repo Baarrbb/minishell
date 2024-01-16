@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/16 17:40:00 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/16 18:54:31 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ static int	handle_waitpid(t_cmd *pipe, t_exec *yipi)
 	return (status);
 }
 
-int	execute_test(t_cmd *pipe, char **envp)
+int	execute_test(t_cmd *pipe, char ***envp)
 {
 	t_exec	*yipi;
 	t_cmd	*command;
@@ -112,7 +112,7 @@ int	execute_test(t_cmd *pipe, char **envp)
 		if (command->builtin)
 			builtingo(command, envp);
 		else
-			exec(command, yipi, envp);
+			exec(command, yipi, *envp);
 		command = command->next;
 		yipi->pipeindex += 2;
 		yipi->index++;
