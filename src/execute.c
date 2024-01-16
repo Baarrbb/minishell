@@ -6,317 +6,120 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/15 19:33:16 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/16 17:40:00 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parsing.h"
-#include <fcntl.h>
-#include <assert.h>
 
-/*void	execute_test(const t_cmd *pipes, char **envp)
+static t_exec	*fill_struct_exec(t_cmd *command)
 {
-	t_cmd	*commands;
-	int		tmpinout[2];
-	int		pipefd[2];
-	int		fdin;
-	int		fdout;
-	pid_t	fils;
+	t_exec	*yipi;
 
-	tmpinout[0] = dup(0);
-	tmpinout[1] = dup(1);
-	commands = (t_cmd *)pipes;
-	if (commands->redir != NULL)
-	{
-		if (commands->redir->in)
-			fdin = open(commands->redir->filename, O_RDWR, 0000644);
-		else if (commands->redir->in_read)
-			fdin = open(commands->redir->filename, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
-		else
-			fdin = tmpinout[0];
-	}
-	else
-		fdin = tmpinout[0];
-	while (commands != NULL)
-	{
-		dup2(fdin, STDIN_FILENO);
-		printf("fdin : %d\n", fdin);
-		close (fdin);
-		if (commands->next == NULL)
-		{
-			if (commands->redir != NULL)
-			{
-				if (commands->redir->out)
-					fdout =open(commands->redir->filename, O_CREAT | O_RDWR | O_TRUNC, 0000644);
-				else if (commands->redir->out_end)
-					fdout = open(commands->redir->filename, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
-			}
-			else
-				fdout = dup(tmpinout[1]);
-		}
-		else
-		{
-			pipe(pipefd);
-			fdout = pipefd[1];
-			fdin = pipefd[0];
-		}
-		dup2(fdout, 1);
-		close (fdout);
-		fils = fork();
-		if (fils == 0)	
-			execve(commands->path_cmd, commands->cmd, envp);
-		commands = commands->next;
-	}
-	printf("test");
-	dup2(tmpinout[0], 0);
-	dup2(tmpinout[1], 1);
-	waitpid(0, NULL, 0);
-}*/
-/*
-void	execute_test(const t_cmd *pipes, char **envp)
-{
-	pid_t	forks;
-	pid_t	forkt;
-	int		pipefd[2];
-	t_cmd	*commands;
-	int		base[2];
-
-	commands = (t_cmd *)pipes;
-	base[0] = dup(0);
-	base[1] = dup(1);
-	if (pipe(pipefd) < 0)
-			printf("error");
-	if (commands->next != NULL)
-	{
-		forks = fork();
-		dup2(pipefd[1], STDOUT_FILENO);
-		//dup2(av1, STDIN_FILENO);
-		if (forks == 0)
-			execve(commands->path_cmd, commands->cmd, envp);
-	}
-	else
-	{
-		forks = fork();
-		if (forks == 0)
-			execve(commands->path_cmd, commands->cmd, envp);
-	}
-	commands = commands->next;
-	while (commands)
-	{
-		if (pipe(pipefd) < 0)
-			printf("error");
-		forks = fork();
-		if (commands->next == NULL)
-		{
-			dup2(base[0], STDOUT_FILENO);
-			dup2(pipefd[1], STDIN_FILENO);
-			if (forks == 0)
-				execve(commands->path_cmd, commands->cmd, envp);
-		}
-		else
-		{
-			dup2(pipefd[1], STDOUT_FILENO);
-			dup2(pipefd[0], STDIN_FILENO);
-			if (forks == 0)
-				execve(commands->path_cmd, commands->cmd, envp);
-		}
-		commands = commands->next;
-	}
-	close(pipefd[0]);
-	close(pipefd[1]);
-	waitpid(forks, NULL, 0);
-	//waitpid(forkt, NULL, 0);
-}
-*/
-
-void	redirections_pipe_in(t_cmd *redirec, int j, int *pipefds)
-{
-	if (redirec->next)
-	{
-		if(dup2(pipefds[j + 1], 1) < 0)
-		{
-			perror("dup2 error to do");
-			exit(EXIT_FAILURE);
-		}
-	}
-}
-
-void	redirections_in(t_cmd *redirec, int fd)
-{
-	t_cmd	*newpointer;
-	t_redir	*oldredir;
-
-	newpointer = redirec;
-	fd = -1;
-	oldredir = newpointer->redir;
-	while (newpointer->redir != NULL)
-	{
-		if (fd != -1)
-			close(fd);
-		if (newpointer->redir->in)
-			fd = open(newpointer->redir->filename, O_RDONLY);
-		if (newpointer->redir->in_read)
-			fd = heredoc(newpointer);
-		newpointer->redir = newpointer->redir->next;
-	}
-	dup2(fd, 0);
-	close(fd);
-	redirec->redir = oldredir;
-}
-
-void	redirections_pipe_out(t_cmd *redirec, int j, int *pipefds)
-{
-	if (j != 0)
-	{
-		if (dup2(pipefds[j-2], 0) < 0)
-		{
-			perror("dup2 error to do");
-			exit(EXIT_FAILURE);
-		}
-	}
-}
-
-void	redirections_out(t_cmd *redirec, int fd)
-{
-	t_cmd	*newpointer;
-	t_redir	*oldredir;
-
-	newpointer = redirec;
-	oldredir = newpointer->redir;
-	while (newpointer->redir != NULL)
-	{
-		if (newpointer->redir->out)
-		{
-			fd = open(newpointer->redir->filename, O_CREAT | O_RDWR | O_TRUNC, 0000644);
-			dup2(fd, 1);
-			close(fd);
-		}
-		else if (newpointer->redir->out_end)
-		{
-			fd = open(newpointer->redir->filename, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
-			dup2(fd, 1);
-			close(fd);
-		}
-		newpointer->redir = newpointer->redir->next;
-	}
-	redirec->redir = oldredir;
-}
-
-void	close_all_pipes(int numPipes, int *pipefds)
-{
-	int	i;
-
-	i = 0;
-	while (i < 2 * numPipes)
-	{
-		close(pipefds[i]);
-		i++;
-	}
-}
-
-int	count_struct(t_cmd *list)
-{
-	int	i;
-
-	i = 0;
-	if (list == NULL)
+	yipi = malloc(1 * sizeof(t_exec));
+	if (yipi == NULL)
 		return (0);
-	while (list)
+	yipi->index = 0;
+	yipi->numpipes = numbers_pipe(command);
+	yipi->pid = malloc((yipi->numpipes + 1) * sizeof(pid_t));
+	if (yipi->pid == NULL)
 	{
-		list = list->next;
-		i++;
+		free(yipi);
+		return (0);
 	}
-	return (i);
+	yipi->pid[yipi->numpipes] = '\0';
+	yipi->pipefds = malloc(((yipi->numpipes * 2)) * sizeof(int));
+	if (yipi->pipefds == NULL)
+	{
+		free(yipi->pid);
+		free(yipi);
+		return (0);
+	}
+	yipi->pipeindex = 0;
+	creation_pipes(yipi);
+	return (yipi);
 }
 
-int execute_test(t_cmd *pipes, char **envp) 
+static void	free_struct_exec(t_exec *yipi)
 {
-	t_cmd *command = (t_cmd *)pipes;
-	int numPipes = count_struct(command);
-	int status;
-	int i;
-	pid_t pid[numPipes];
-	int pipefds[2*numPipes];
-	int fd = -1;
-	int pipeindex;
-	int	j = 0;
+	free(yipi->pipefds);
+	free(yipi->pid);
+	free(yipi);
+}
 
-	i = 0;
-	//creation pipes create_pipes(*pipefds);
-	while (numPipes > i)
+static void	exec(t_cmd *command, t_exec *yipi, char **envp)
+{
+	yipi->pid[yipi->index] = fork();
+	if (yipi->pid[yipi->index] == 0)
 	{
-		if (pipe(pipefds + i*2) < 0) 
+		sig_default();
+		redirections_pipe_in(command, yipi);
+		redirections_out(command);
+		redirections_pipe_out(yipi);
+		redirections_in(command);
+		close_all_pipes(yipi->numpipes, yipi->pipefds);
+		error_managing(command);
+		if (execve(command->path_cmd, command->cmd, envp) < 0)
 		{
-			perror("couldn't pipe");
-			exit(EXIT_FAILURE);
+			perror(command->path_cmd);
+			exit(127);
 		}
-		i++;
 	}
-	//forking
-	pipeindex = 0;
-	j = 0;
-	while (command) 
+	else if (yipi->pid[yipi->index] < 0)
 	{
-		signal(SIGINT, SIG_IGN);	
-		signal(SIGQUIT, SIG_IGN);
+		perror("dup2 error to do");
+		exit(EXIT_FAILURE);
+	}
+}
+
+static int	handle_waitpid(t_cmd *pipe, t_exec *yipi)
+{
+	int	status;
+	int	wait_result;
+
+	status = 0;
+	wait_result = 0;
+	yipi->index = 0;
+	while (yipi->index < yipi->numpipes)
+	{
+		wait_result = waitpid(yipi->pid[yipi->index], &status, 0);
+    	if (wait_result == -1)
+		{
+			perror("waitpid error");
+			break ;
+			// Gérer l'erreur de manière appropriée
+		}
+		pipe->exit_val = wait_result;
+		yipi->index++;
+	}
+	return (status);
+}
+
+int	execute_test(t_cmd *pipe, char **envp)
+{
+	t_exec	*yipi;
+	t_cmd	*command;
+	int		status;
+
+	command = (t_cmd *)pipe;
+	status = 0;
+	yipi = fill_struct_exec(command);
+	if (yipi == NULL)
+		return (-1);
+	while (command)
+	{
+		sig_ignore();
 		if (command->builtin)
 			builtingo(command, envp);
 		else
-		{
-			pid[j] = fork();
-			if (pid[j] == 0) 
-			{
-				//not last command
-				signal(SIGINT, SIG_DFL);
-				signal(SIGQUIT, SIG_DFL);
-				redirections_pipe_in(command, pipeindex, pipefds);
-				//redirction out
-				redirections_out(command, fd);
-				//if not first command
-				redirections_pipe_out(command, pipeindex, pipefds);
-				//redirection_in
-				redirections_in(command, fd);
-				//close all pipes
-				close_all_pipes(numPipes, pipefds);
-				//gestion d'erreur
-				error_managing(command);
-				//execution
-				if (execve(command->path_cmd, command->cmd, envp) < 0)
-				{
-					perror(command->path_cmd);
-					exit(127);
-				}
-			}
-			else if (pid[j] < 0)
-			{
-				perror("dup2 error to do");
-				exit(EXIT_FAILURE);
-			}
-		}
+			exec(command, yipi, envp);
 		command = command->next;
-		pipeindex += 2;
-		j++;
+		yipi->pipeindex += 2;
+		yipi->index++;
 	}
-	//close pipe
-	close_all_pipes(numPipes, pipefds);
-	//wait for children & exitval
-	i = 0;
-	while (i < numPipes)
-	{
-		pipes->exit_val = waitpid(pid[i], &status, 0);
-		i++;
-	}
-	if (WIFEXITED(status))
-	{
-		//printf("Le processus enfant s'est terminé normalement avec le code %d\n", WEXITSTATUS(status));
-		//signal(SIGINT, handle_sigint);
-	}
-	else if (WIFSIGNALED(status) == -6) 
-	{
-		//printf("Le processus enfant a été terminé par le signal %d\n", WTERMSIG(status));
-		//signal(SIGINT, handle_sigint);
-	}
-	if (WTERMSIG(status) == SIGINT) 
-		//printf("C'était un SIGINT (Ctrl-C)\n");
+	close_all_pipes(yipi->numpipes, yipi->pipefds);
+	status = handle_waitpid(pipe, yipi);
+	printtestsignals(status);
+	free_struct_exec(yipi);
 	return (WEXITSTATUS(status));
 }

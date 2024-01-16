@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/12 19:12:54 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/15 19:44:44 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/16 17:13:55 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ static void	get_arg(t_cmd *cmd, char *arg, char c, int i)
 		j++;
 	while (*arg)
 	{
-		while(arg[j] != c && arg[j])
+		while (arg[j] != c && arg[j])
 			j++;
 		sub = ft_substr(arg, 0, j);
 		new = strjoin(new, sub);
@@ -56,7 +56,7 @@ static void	quote_cmd_filling(t_cmd *quoting)
 	}
 }
 
-static void remove_quotes(t_cmd *cmd)
+static void	remove_quotes(t_cmd *cmd)
 {
 	int		i;
 	int		j;
@@ -99,12 +99,12 @@ int	handle_quoting(t_cmd *quoting, char **env, int sortie)
 				return (0);
 			str_sortie = ft_itoa(sortie);
 			quote_cmd_filling(quoting);
-			if (etat_mort(quoting, env, str_sortie) == 0)
+			if (handle_var(quoting, env, str_sortie) == 0)
 				return (0); // error malloc false code return 
 			free(str_sortie);
 			remove_quotes(quoting);
 		}
 		quoting = quoting->next;
 	}
-	return (1);  // error malloc bon code return 1
+	return (1); // error malloc bon code return 1
 }

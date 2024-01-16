@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/11 19:40:10 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/15 15:11:27 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/16 17:39:28 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,46 +37,50 @@
 // 	return (i);
 // }
 
+
+static void	reading_heredoc(int *pipeheredoc, char *delimiter)
+{
+	char	*line;
+
+	close(pipeheredoc[0]);
+	while (1)
+	{
+		line = readline("testheredoc : ");
+		if (ft_strncmp(line, delimiter, ft_strlen(delimiter)) == 0)
+		{
+			if (delimiter[ft_strlen(delimiter)] == '\0')
+			{
+				free(line);
+				break;
+			}
+		}
+		write(pipeheredoc[1], line, ft_strlen(line));
+		write(pipeheredoc[1], "\n", 1);
+	}
+	close(pipeheredoc[1]);
+	exit(0);
+}
+
 int	heredoc(t_cmd *test)
 {
-	int pipeheredoctest[2];
-	char *line;
+	int pipeheredoc[2];
 	char *delimiter;
+
 	delimiter = test->redir->filename;
-	
-	if (pipe(pipeheredoctest) < 0)
+	if (pipe(pipeheredoc) < 0)
 	{
 		perror("fail pipe");
 		return (0);
 	}
-	int pid = fork();
+	pid_t pid = fork();
 	if (pid == 0)
-	{
-		close(pipeheredoctest[0]);
-		//dup2(pipeheredoctest[1], 1);
-		while (1)
-		{
-			line = readline("testheredoc : ");
-			if (ft_strncmp(line, delimiter, ft_strlen(delimiter)) == 0)
-			{
-				if (delimiter[ft_strlen(delimiter)] == '\0')
-				{
-					free(line);
-					break;
-				}
-			}
-			write(pipeheredoctest[1], line, ft_strlen(line));
-			write(pipeheredoctest[1], "\n", 1);
-		}
-		close(pipeheredoctest[1]);
-		exit(0);
-	}
+		reading_heredoc(pipeheredoc, delimiter);
 	if (pid > 0)
 	{
 		int status;
 		waitpid(pid, &status, 0);
-		close(pipeheredoctest[1]);
-		return (pipeheredoctest[0]);
+		close(pipeheredoc[1]);
+		return (pipeheredoc[0]);
 	}
 	return (0);
 }

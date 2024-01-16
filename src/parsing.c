@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/15 19:49:48 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/16 17:33:13 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -672,6 +672,8 @@ int	main(int ac, char **av, char **envp)
 					return (printf("error\n"), 0); // error malloc idk what to do
 				check_commands(pipe);
 				sortie = execute_test(pipe, cpy_env);
+				if (sortie == -1)
+					return (printf("error\n"), 0); // error malloc idk what to do
 			}
 			print_linked_list(pipe);
 			free(line);

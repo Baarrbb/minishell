@@ -1,25 +1,5 @@
-a.out
-caca
-dsa
-headers
-libft
-list.c
-Makefile
-minishell
-out10
-out2
-out3
-out4
-out5
-out6
-out7
-out8
-out9
-readline.supp
-script.sh
-src
-test
-testprnadjy
+$PWD
+$PWDout3
 dsa
 headers
 libft
@@ -45,6 +25,8 @@ testing
 testprnadjy
 tom
 znorminette comparator
+$PWD
+$PWDout3
 dsa
 headers
 libft

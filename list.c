@@ -1,6 +1,6 @@
 #include <stdio.h>
 int	main(void)
 {
-	while (1)
-		sleep(1);
+	char	*test = "?=\0";
+	printf("%s\n%d\n",test, strlen(test));
 }
