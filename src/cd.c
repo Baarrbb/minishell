@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 20:23:33 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/15 20:31:57 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/17 16:54:23 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@ static int	get_nb_args(t_cmd *cmd)
 	return (i);
 }
 
+
+//si on trouve pas OLDPWD 
+// (parex env -i ./minishell) faut quand meme rajouter la var OLDPWD
 static void	refresh_env_pwd(char ***env, char *oldpwd)
 {
 	char	**tmp;
@@ -68,17 +71,17 @@ static void	move_cd(char *path, char **env, char *oldpwd)
 	ret = 1;
 	if (!path || !ft_strncmp(path, "--\0", 3) || !ft_strncmp(path, "~\0", 2))
 	{
-		if (get_ourenv("HOME", env))
-			ret = chdir(get_ourenv("HOME", env));
+		if (get_ourenv("HOME", env, 0))
+			ret = chdir(get_ourenv("HOME", env, 0));
 		else
 			printf("%s HOME not set\n", ERROR_CD);
 	}
-	else if (!ft_strncmp(path, "-\0", 2) && get_ourenv("OLDPWD", env))
+	else if (!ft_strncmp(path, "-\0", 2) && get_ourenv("OLDPWD", env, 0))
 	{
-		printf("%s\n", get_ourenv("OLDPWD", env));
-		ret = chdir(get_ourenv("OLDPWD", env));
+		printf("%s\n", get_ourenv("OLDPWD", env, 0));
+		ret = chdir(get_ourenv("OLDPWD", env, 0));
 	}
-	else if (!ft_strncmp(path, "-\0", 2) && !get_ourenv("OLDPWD", env))
+	else if (!ft_strncmp(path, "-\0", 2) && !get_ourenv("OLDPWD", env, 0))
 		printf("%s OLDPWD not set\n", ERROR_CD);
 	else if (path[0] == '-' && path[1] == '-' && path[3])
 		printf("%s: --: invalid option\n", ERROR_CD);

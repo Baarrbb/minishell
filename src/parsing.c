@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/15 17:04:38 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/17 16:55:25 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,33 +70,26 @@ int	is_space(int c)
 	return (0);
 }
 
-char *get_ourenv(char* tofind, char **ourenv)
+char	*get_ourenv(char *tofind, char **ourenv, char *sortie)
 {
 	int	i;
-	char	*newstr;
 
 	i = 0;
-	newstr = malloc(2 * sizeof(char));
-	newstr[0] = '?';
-	newstr[1] = '\0';
-	while (ourenv[i])
+	if (ourenv)
 	{
-		if (ft_strncmp(ourenv[i], tofind, ft_strlen(tofind)) == 0)
+		while (ourenv[i])
 		{
-			if (ourenv[i][ft_strlen(tofind)] == '=')
-			{
-				free(newstr);
-				return (&ourenv[i][ft_strlen(tofind) + 1]);
-			}
+			if (ft_strncmp(ourenv[i], tofind, ft_strlen(tofind)) == 0)
+				return (ft_strdup(&ourenv[i][ft_strlen(tofind) + 1]));
+			i++;
 		}
-		i++;
 	}
-	if (ft_strncmp(tofind, newstr, ft_strlen(newstr)) == 0)
-		free(newstr);
-	return (0);
+	if (ft_strncmp(tofind, "?=\0", ft_strlen(tofind) + 1) == 0)
+		return (sortie);
+	return (NULL);
 }
 
-static void add_shlvl(char **envp)
+static void	add_shlvl(char **envp)
 {
 	int		i;
 	int		j;
@@ -123,6 +116,24 @@ static void add_shlvl(char **envp)
 	}
 }
 
+static char **copy_env_null(void)
+{
+	char	**new_env;
+	char	pwd[PATH_MAX];
+
+	getcwd(pwd, PATH_MAX);
+	new_env = ft_calloc(4, sizeof(char *));
+	if (!new_env)
+		return (0);
+	new_env[0] = strjoin(new_env[0], "PWD=");
+	new_env[0] = strjoin(new_env[0], pwd);
+	new_env[1] = strjoin(new_env[1], "SHLVL=");
+	new_env[1] = strjoin(new_env[1], "1");
+	new_env[2] = strjoin(new_env[2], "_=");
+	new_env[2] = strjoin(new_env[2], "./minishell");
+	return (new_env);
+}
+
 static char	**copy_env(char **envp)
 {
 	int		i;
@@ -130,7 +141,11 @@ static char	**copy_env(char **envp)
 
 	i = 0;
 	if (!envp[0])
-		return (0);
+	{
+		cpy_env = copy_env_null();
+		add_shlvl(cpy_env);
+		return (cpy_env);
+	}
 	while (envp[i])
 		i++;
 	cpy_env = ft_calloc(i + 1, sizeof(char *));
