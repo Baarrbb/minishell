@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/17 16:55:25 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/17 20:34:57 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,7 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 		return (0);
 	full_cmd = 0;
 	i = -1;
-	wo_param = ft_split (cmd1, ' ');
+	wo_param = ft_split(cmd1, ' ');
 	while (cmd->path[++i])
 	{
 		full_cmd = strjoin(full_cmd, cmd->path[i]);
@@ -396,7 +396,7 @@ static int	file_char(int c)
 	return (0);
 }
 
-static void	error_syntax(char *line)
+static int	error_syntax(char *line, t_cmd **cmd)
 {
 	printf("error_syntax\n");
 	char	*token;
@@ -412,17 +412,24 @@ static void	error_syntax(char *line)
 		token = ">";
 	else if (line[0] == '<')
 		token = "<";
-	printf("%s`%s\'\n", ERROR_MSG, token);
+	if (token)
+	{
+		printf("%s`%s\'\n", ERROR_MSG, token);
+		free_struct(cmd);
+		return (1);
+	}
+	return (0);
 }
 
-static char	*test_filename(char *line)
+static char	*test_filename(char *line, t_cmd *cmd)
 {
+	printf("test filename\n");
 	int	i;
 	int	count;
 
 	i = 0;
 	count = 0;
-	while (!is_space(line[i]) && line[i])
+	while (!is_space(line[i]) && line[i] && !is_spe_char(line[i]))
 	{
 		if (line[i] == '\'' && line[i])
 		{
@@ -443,17 +450,19 @@ static char	*test_filename(char *line)
 				count++;
 				i++;
 			}
-			if (count == 0)
-			{
-				error_syntax(line);
+			if (error_syntax(line, &cmd))
 				return (0);
-			}
+			// if (count == 0)
+			// {
+			// 	error_syntax(line, &cmd);
+			// 	return (0);
+			// }
 		}
 	}
 	return(ft_substr(line, 0, i));
 }
 
-static char	*get_filename(t_redir *redir, char *line)
+static char	*get_filename(t_cmd **cmd, t_redir *redir, char *line)
 {
 	printf("get_filename\n");
 	int		i;
@@ -465,11 +474,14 @@ static char	*get_filename(t_redir *redir, char *line)
 		line++;
 	else if (redir->out_end || redir->in_read)
 		line += 2;
-	while (line[++i] == ' ' && *line)
-		line++;
-	i = -1;
-	redir->filename = test_filename(line);
+	line = trim_space(line);
+	if (error_syntax(line, cmd))
+		return (0);
+	printf("av LINE %s\n", line);
+	redir->filename = test_filename(line, *cmd);
+	printf("LINE %s\n", line);
 	line += ft_strlen(redir->filename);
+	printf("len %zu %s\n", ft_strlen(redir->filename), line);
 	if (*line == 0)
 		return (0);
 	return (line);
@@ -521,10 +533,12 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 	t_redir	*new;
 	char	*linetrim;
 	char	*tmp;
+	int		i;
 
 	linetrim = ft_strdup(line);
 	tmp = linetrim;
-	while (*linetrim)
+	printf("DASN REDIR LINE %s\n", linetrim);
+	while (*linetrim && linetrim[0])
 	{
 		new = ft_calloc(1, sizeof(t_redir));
 		if (!new)
@@ -537,7 +551,7 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 			free(tmp);
 			return (0);
 		}
-		linetrim = get_filename(new, linetrim);
+		linetrim = get_filename(&cmd, new, linetrim);
 		if (!new->filename && !cmd)
 		{
 			free(new);
@@ -553,8 +567,13 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 		linetrim = trim_space(linetrim);
 		if (!cmd->cmd && linetrim[0] != '>' && linetrim[0] != '<')
 		{
+			i = -1;
 			fill_cmd(cmd, linetrim, envp);
-			linetrim += ft_strlen(cmd->cmd[0]);
+			while (cmd->cmd[++i])
+			{
+				linetrim = trim_space(linetrim);
+				linetrim += ft_strlen(cmd->cmd[i]);
+			}
 		}
 		else if (linetrim[0] != '>' && linetrim[0] != '<' && ft_strlen(linetrim))
 		{
@@ -586,7 +605,7 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 			new_cmd->builtin = cmd->builtin;
 			if (cmd->path_cmd)
 				new_cmd->path_cmd = ft_strdup(cmd->path_cmd);
-			free_struct(cmd);
+			free_struct(&cmd);
 			cmd = new_cmd;
 		}
 	}
@@ -629,6 +648,9 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	printf("init_cmd\n");
 	t_cmd	*cmd;
 	int		len;
+	char	*linetrim;
+	char	*tmp;
+	int		i;
 
 	cmd = (t_cmd *)ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
@@ -637,16 +659,28 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	cmd->line = line;
 	if (line[0] != '<' && line[0] != '>')
 		fill_cmd(cmd, line, envp);
-	len = ft_strlen(line);
-	if (ft_strnstr(line, ">", len) || ft_strnstr(line, "<", len))
-	{	
-		cmd = init_redir(cmd, redir, line, envp);
-		if (!cmd)
+	linetrim = ft_strdup(line);
+	tmp = linetrim;
+	if (cmd->cmd && cmd->cmd[0])
+	{
+		i = -1;
+		while (cmd->cmd[++i])
 		{
-			free_struct(cmd);
+			linetrim += ft_strlen(cmd->cmd[i]);
+			linetrim = trim_space(linetrim);
+		}
+	}
+	len = ft_strlen(linetrim);
+	if (ft_strnstr(linetrim, ">", len) || ft_strnstr(linetrim, "<", len))
+	{	
+		cmd = init_redir(cmd, redir, linetrim, envp);
+		if (!cmd || !cmd->redir)
+		{
+			free(tmp);
 			return (0);
 		}
 	}
+	free(tmp);
 	return (cmd);
 }
 
@@ -672,7 +706,7 @@ static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **
 	}
 	if (!check_quote(line))
 	{
-		printf("bash: syntax error quote expected\n");
+		printf("minishell: syntax error quote expected\n");
 		free(linetrim);
 		return (0);
 	}
@@ -742,7 +776,7 @@ int	main(int ac, char **av, char **envp)
 			free_char_tab(command);
 			free_list(&pipe);
 		}
-		else
+		else if (pipe)
 		{
 			print_linked_list(pipe);
 			free(line);
@@ -777,6 +811,11 @@ void	print_struct(t_cmd *cmd)
 	// for(int i = 0; cmd->path[i]; i++)
 	// 	printf("%s\n", cmd->path[i]);
 	// printf("Cmd with args :\n");
+	if (!cmd)
+	{
+		printf("NULL\n");
+		return ;
+	}
 	if (cmd->cmd)
 	{
 		for (int i = 0; cmd->cmd[i]; i++)

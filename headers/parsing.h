@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/17 16:15:03 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/17 19:23:26 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void	free_char_tab(char **tab);
 void	free_list(t_cmd **list);
 void	ft_lstadd_back(t_redir **lst, t_redir *new);
 void	ft_lstadd_back_bis(t_cmd **lst, t_cmd *new);
-void	free_struct(t_cmd *cmd);
+void	free_struct(t_cmd **cmd);
 int		return_free(char *tofree, int ret);
 char	*get_ourenv(char *tofind, char **ourenv, char *sortie);
 
