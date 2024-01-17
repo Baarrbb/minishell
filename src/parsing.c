@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/17 20:34:57 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/17 20:36:11 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -477,11 +477,8 @@ static char	*get_filename(t_cmd **cmd, t_redir *redir, char *line)
 	line = trim_space(line);
 	if (error_syntax(line, cmd))
 		return (0);
-	printf("av LINE %s\n", line);
 	redir->filename = test_filename(line, *cmd);
-	printf("LINE %s\n", line);
 	line += ft_strlen(redir->filename);
-	printf("len %zu %s\n", ft_strlen(redir->filename), line);
 	if (*line == 0)
 		return (0);
 	return (line);
@@ -537,7 +534,6 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 
 	linetrim = ft_strdup(line);
 	tmp = linetrim;
-	printf("DASN REDIR LINE %s\n", linetrim);
 	while (*linetrim && linetrim[0])
 	{
 		new = ft_calloc(1, sizeof(t_redir));
