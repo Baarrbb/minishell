@@ -6,13 +6,14 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 00:14:03 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 00:18:31 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 00:32:37 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef BUILTINS_H
 # define BUILTINS_H
 
+#include "minishell.h"
 # define ERROR_CD "minishell: cd:"
 
 /* ECHO_C */

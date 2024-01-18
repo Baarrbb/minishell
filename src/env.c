@@ -6,11 +6,11 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 20:46:44 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/13 20:46:59 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 00:33:46 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "parsing.h"
+#include "minishell.h"
 
 void	our_env(char **env)
 {

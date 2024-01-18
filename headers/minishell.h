@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 00:10:02 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 00:15:25 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 00:40:17 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,6 @@
 #include <string.h>
 #include <errno.h>
 #include "libft.h"
-#include "parsing.h"
-#include "builtins.h"
 
 typedef struct s_redir
 {
@@ -46,5 +44,13 @@ typedef struct s_cmd
 	t_redir			*redir;
 	struct s_cmd	*next;
 }	t_cmd;
+
+#include "parsing.h"
+#include "builtins.h"
+
+#include <asm-generic/errno-base.h> // pour les erreurs chdri  normalement dans unistd.h mais chez moi trouve pas 
+
+# define ERROR_MSG "minishell: syntax error near unexpected token "
+
 
 # endif

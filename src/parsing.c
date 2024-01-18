@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:36:10 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 00:11:54 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 00:50:28 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,21 +24,9 @@ int	is_space(int c)
 	return (0);
 }
 
-char	*trim_space(char *line)
-{
-	if (line)
-	{
-		while (*line == ' ' || *line == '	')
-			line++;
-	}
-	return (line);
-}
-
 static int	is_spe_char(int c)
 {
-	// printf("is_spe_char\n");
-	// ajouter  c == '$' ????
-	if (c == '>' || c == '<' || c == '|') //|| c == '\'' || c == '\"'
+	if (c == '>' || c == '<' || c == '|')
 		return (1);
 	return (0);
 }
@@ -161,204 +149,6 @@ static char	**fill_args(char **args, char *line)
 		}
 	}
 	return (args);
-}
-
-static int	error_syntax(char **args, char *line)
-{
-	char	*token;
-
-	token = 0;
-	if ((!line || line[0] == 0) && !args[1])
-		token = "newline";
-	else if (line[0] == '|')
-		token = "|";
-	else if ((line[0] == '>' && line[1] == '>')
-		|| (args[1] && args[1][0] == '>' && args[1][1] == '>'))
-		token = ">>";
-	else if ((line[0] == '<' && line[1] == '<')
-		|| (args[1] && args[1][0] == '<' && args[1][1] == '<'))
-		token = "<<";
-	else if (line[0] == '>' || (args[1][0] == '>'))
-		token = ">";
-	else if (line[0] == '<' || (args[1][0] == '<'))
-		token = "<";
-	if (token)
-	{
-		printf("%s`%s\'\n", ERROR_MSG, token);
-		return (0);
-	}
-	return (1);
-}
-
-static int	check_syntax_redir(char **args)
-{
-	int	i;
-
-	i = -1;
-	while (args[++i])
-	{
-		if (args[i][0] == '<' && args[i][1] == '>')
-		{
-			printf("%s`newline\'\n", ERROR_MSG);
-			return (0);
-		}
-		else if (args[i][0] == '>' && args[i][1] == '>')
-		{
-			if (!error_syntax(&args[i], &args[i][2]))
-				return (0);
-		}
-		else if (args[i][0] == '<' && args[i][1] == '<')
-		{
-			if (!error_syntax(&args[i], &args[i][2]))
-				return (0);
-		}
-		else if (args[i][0] == '>' && args[i][1] != '>')
-		{
-			if (!error_syntax(&args[i], &args[i][1]))
-				return (0);
-			
-		}
-		else if (args[i][0] == '<' && args[i][1] != '<')
-		{
-			if (!error_syntax(&args[i], &args[i][1]))
-				return (0);
-		}
-	}
-	return (1);
-}
-
-static int	check_syntax_pipe(char **args, int size)
-{
-	if (args[0][0] == '|' && args[0][1] == '|')
-	{
-		printf("%s`||\'\n", ERROR_MSG);
-		return (0);
-	}
-	else if (args[0][0] == '|')
-	{
-		printf("%s`|\'\n", ERROR_MSG);
-		return (0);
-	}
-	else if (args[size - 1][0] == '|')
-	{
-		printf("%s`|\'\n", ERROR_MSG);
-		return (0);
-	}
-	return (1);
-}
-
-static int	check_syntax(char **args, int size)
-{
-	return (check_syntax_redir(args) && check_syntax_pipe(args, size));
-}
-
-/**
- * Partie utilitaire
-*/
-
-static char	*dst_null(char	*dst)
-{
-	dst = (char *)malloc(1 * sizeof(char));
-	if (!dst)
-		return (NULL);
-	dst[0] = '\0';
-	return (dst);
-}
-
-char	*strjoin(char *dst, char *s)
-{
-	char	*res;
-	int		i;
-	int		j;
-
-	if (!s)
-		return (NULL);
-	if (!dst)
-		dst = dst_null(dst);
-	res = (char *)malloc((ft_strlen(s) + ft_strlen(dst) + 1) * sizeof(char));
-	if (!res)
-	{
-		free(dst);
-		return (NULL);
-	}
-	i = -1;
-	j = -1;
-	while (dst[++i])
-		res[i] = dst[i];
-	while (s[++j])
-		res[i++] = s[j];
-	res[i] = '\0';
-	free(dst);
-	return (res);
-}
-
-static void	add_shlvl(char **envp)
-{
-	int		i;
-	int		j;
-	char	*new;
-
-	i = -1;
-	while (envp[++i])
-	{
-		if (!ft_strncmp(envp[i], "SHLVL", ft_strlen("SHLVL")))
-		{
-			j = 0;
-			while (envp[i][j] != '=')
-				j++;
-			j += 1;
-			if (ft_atoi(envp[i] + j))
-			{
-				new = ft_itoa(ft_atoi(envp[i] + j) + 1);
-				free(envp[i]);
-				envp[i] = 0;
-				envp[i] = strjoin(ft_strdup("SHLVL="), new);
-				free(new);
-			}
-		}
-	}
-}
-
-static char **copy_env_null(void)
-{
-	char	**new_env;
-	char	pwd[PATH_MAX];
-
-	getcwd(pwd, PATH_MAX);
-	new_env = ft_calloc(4, sizeof(char *));
-	if (!new_env)
-		return (0);
-	new_env[0] = strjoin(new_env[0], "PWD=");
-	new_env[0] = strjoin(new_env[0], pwd);
-	new_env[1] = strjoin(new_env[1], "SHLVL=");
-	new_env[1] = strjoin(new_env[1], "1");
-	new_env[2] = strjoin(new_env[2], "_=");
-	new_env[2] = strjoin(new_env[2], "./minishell");
-	return (new_env);
-}
-
-static char	**copy_env(char **envp)
-{
-	int		i;
-	char	**cpy_env;
-
-	i = 0;
-	if (!envp[0])
-	{
-		cpy_env = copy_env_null();
-		add_shlvl(cpy_env);
-		return (cpy_env);
-	}
-	while (envp[i])
-		i++;
-	cpy_env = ft_calloc(i + 1, sizeof(char *));
-	if (!cpy_env)
-		return (0);
-	i = -1;
-	while (envp[++i])
-		cpy_env[i] = ft_strdup(envp[i]);
-	add_shlvl(cpy_env);
-	return (cpy_env);
 }
 
 /**
@@ -596,7 +386,7 @@ static t_cmd	*fill_struct(t_cmd **pipe, char **args, char **envp)
 	return (*pipe);
 }
 
-static t_cmd	*check_line(char *line, t_cmd **pipe, char **envp)
+t_cmd	*check_line(char *line, t_cmd **pipe, char **envp)
 {
 	char	**args;
 	int		size;
