@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/18 15:52:48 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/18 23:47:37 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,6 +212,10 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 	free_char_tab(wo_param);
 	return (0);
 }
+
+
+
+
 
 static int	check_quote(char *line)
 {
@@ -609,6 +613,11 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 	free(tmp);
 	return (cmd);
 }
+
+
+
+
+
 
 static void	is_builtin(t_cmd *cmd)
 {

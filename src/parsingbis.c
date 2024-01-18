@@ -6,11 +6,16 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:36:10 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/18 23:18:15 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/18 23:52:24 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parsing.h"
+
+/**
+ * Partie je fais un double tableau en separant les mots des tokens
+ * et verification syntaxe
+*/
 
 int	is_space(int c)
 {
@@ -248,7 +253,9 @@ static int	check_syntax(char **args, int size)
 	return (check_syntax_redir(args) && check_syntax_pipe(args, size));
 }
 
-/************************************************************************************************/
+/**
+ * Partie utilitaire
+*/
 
 static char	*dst_null(char	*dst)
 {
@@ -355,7 +362,85 @@ static char	**copy_env(char **envp)
 	return (cpy_env);
 }
 
-/************************************************************************************************/
+/**
+* Partie liste chainee et redirection
+*/
+
+static char	**get_path(char **envp)
+{
+	printf("get path\n");
+	char	**path;
+	char	**del_path;
+	int		i;
+
+	i = -1;
+	path = 0;
+	del_path = 0;
+	if (!envp)
+		return (0);
+	while (envp[++i])
+	{
+		if (!ft_strncmp(envp[i], "PATH", 4))
+		{
+			del_path = ft_split(envp[i], '=');
+			path = ft_split(del_path[1], ':');
+			break ;
+		}
+	}
+	if (del_path)
+		free_char_tab(del_path);
+	return (path);
+}
+
+static void	is_builtin(t_cmd *cmd)
+{
+	printf("id_builtin\n");
+	if (!cmd->cmd)
+		return ;
+	if (!ft_strncmp(cmd->cmd[0], "echo", ft_strlen(cmd->cmd[0])))
+		cmd->builtin = 1;
+	else if (!ft_strncmp(cmd->cmd[0], "cd", ft_strlen(cmd->cmd[0])))
+		cmd->builtin = 1;
+	else if (!ft_strncmp(cmd->cmd[0], "pwd", ft_strlen(cmd->cmd[0])))
+		cmd->builtin = 1;
+	else if (!ft_strncmp(cmd->cmd[0], "export", ft_strlen(cmd->cmd[0])))
+		cmd->builtin = 1;
+	else if (!ft_strncmp(cmd->cmd[0], "unset", ft_strlen(cmd->cmd[0])))
+		cmd->builtin = 1;
+	else if (!ft_strncmp(cmd->cmd[0], "env", ft_strlen(cmd->cmd[0])))
+		cmd->builtin = 1;
+	else if (!ft_strncmp(cmd->cmd[0], "exit", ft_strlen(cmd->cmd[0])))
+		cmd->builtin = 1;
+}
+
+static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
+{
+	printf("check_exist_cmd\n");
+	int		i;
+	char	*full_cmd;
+	char	**wo_param;
+
+	if (!cmd->path)
+		return (0);
+	full_cmd = 0;
+	i = -1;
+	wo_param = ft_split(cmd1, ' ');
+	while (cmd->path[++i])
+	{
+		full_cmd = strjoin(full_cmd, cmd->path[i]);
+		full_cmd = strjoin(full_cmd, "/");
+		full_cmd = strjoin(full_cmd, wo_param[0]);
+		if (access(full_cmd, X_OK) == 0)
+		{
+			free_char_tab(wo_param);
+			return (full_cmd);
+		}
+		free(full_cmd);
+		full_cmd = 0;
+	}
+	free_char_tab(wo_param);
+	return (0);
+}
 
 static	void	init_redir(t_cmd **cmd, char **args, int type)
 {
@@ -403,42 +488,6 @@ static void	get_cmd(t_cmd **cmd, char **args)
 		(*cmd)->cmd[i] = ft_strdup(args[i]);
 }
 
-// static void	add_arg(t_cmd **cmd, char **args)
-// {
-// 	printf("add_arg\n");
-// 	int		i;
-// 	int		j;
-// 	t_cmd	*new;
-// 	i = 0;
-// 	j = 0;
-// 	new = ft_calloc(1, sizeof(t_cmd));
-// 	if (!new)
-// 		return (0);
-// 	while ((*cmd)->cmd[i])
-// 		i++;
-// 	while (args[j] && ft_strncmp(args[j], ">", 1) && ft_strncmp(args[j], ">>", 2)
-// 		&& ft_strncmp(args[j], "<", 1) && ft_strncmp(args[j], "<<", 2)
-// 		&& ft_strncmp(args[j], "|", 1))
-// 		j++;
-// 	new->cmd = ft_calloc(i + j + 1, sizeof(char *));
-// 	if (!new->cmd)
-// 		return (0);
-// 	i = -1;
-// 	while ((*cmd)->cmd[++i])
-// 		new->cmd[i] = ft_strdup((*cmd)->cmd[i]);
-// 	j = -1;
-// 	while (args[++j] && ft_strncmp(args[j], ">", 1) && ft_strncmp(args[j], ">>", 2)
-// 		&& ft_strncmp(args[j], "<", 1) && ft_strncmp(args[j], "<<", 2)
-// 		&& ft_strncmp(args[j], "|", 1))
-// 	{
-// 		new->cmd[i] = ft_strdup(args[j]);
-// 		i++;
-// 	}
-// 	new->redir = (*cmd)->redir;
-// 	free_struct(cmd);
-// 	*cmd = &new;
-// }
-
 static void	add_arg(t_cmd **cmd, char **args)
 {
 	printf("add_arg\n");
@@ -472,7 +521,7 @@ static void	add_arg(t_cmd **cmd, char **args)
 	(*cmd)->cmd = new_cmd;
 }
 
-static t_cmd	*fill_cmd(t_cmd **pipe, char **args)
+static void	fill_cmd(t_cmd **pipe, char **args)
 {
 	t_cmd	*cmd;
 	int	i;
@@ -481,7 +530,7 @@ static t_cmd	*fill_cmd(t_cmd **pipe, char **args)
 	i = 0;
 	cmd = ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
-		return (0);
+		return ;
 	ft_memset(cmd, 0, sizeof(t_cmd));
 	while (args[i] && ft_strncmp(args[i], "|", ft_strlen(args[i])))
 	{
@@ -521,7 +570,6 @@ static t_cmd	*fill_cmd(t_cmd **pipe, char **args)
 		{
 			j = 0;
 			add_arg(&cmd, &args[i]);
-			print_struct(cmd);
 			while (args[i] && ft_strncmp(args[i], ">", 1) && ft_strncmp(args[i], ">>", 2)
 				&& ft_strncmp(args[i], "<", 1) && ft_strncmp(args[i], "<<", 2)
 				&& ft_strncmp(args[i], "|", 1))
@@ -530,10 +578,35 @@ static t_cmd	*fill_cmd(t_cmd **pipe, char **args)
 	}
 	if (args[i] && !ft_strncmp(args[i], "|", ft_strlen(args[i])))
 		fill_cmd(pipe, &args[i + 1]);
-	return (cmd);
 }
 
-static t_cmd	*check_line(char *line, t_cmd **pipe)
+static t_cmd	*fill_struct(t_cmd **pipe, char **args, char **envp)
+{
+	t_cmd	*tmp;
+
+	fill_cmd(pipe, args);
+	tmp = *pipe;
+	while (tmp)
+	{
+		tmp->path = get_path(envp);
+		tmp = tmp->next;
+	}
+	tmp = *pipe;
+	while (tmp)
+	{
+		is_builtin(tmp);
+		tmp = tmp->next;
+	}
+	tmp = *pipe;
+	while (tmp)
+	{
+		tmp->path_cmd = check_exist_cmd(tmp->cmd[0], tmp);
+		tmp = tmp->next;
+	}
+	return (*pipe);
+}
+
+static t_cmd	*check_line(char *line, t_cmd **pipe, char **envp)
 {
 	char	**args;
 	int		size;
@@ -553,26 +626,20 @@ static t_cmd	*check_line(char *line, t_cmd **pipe)
 	printf("\n");
 	if(!check_syntax(args, size))
 		return (0);
-	return (fill_cmd(pipe, args));
+	return(fill_struct(pipe, args, envp));
+	// return (fill_cmd(pipe, args));
 }
 
 int	main(int ac, char **av, char **envp)
 {
 	char	*line;
-	// char	**command;
-	// t_cmd	*cmd;
 	t_cmd	*pipe;
-	// t_redir	*redir;
-	// int		i;
-	// char	**cpy_env;
+	char	**cpy_env;
 
 	(void)ac;
 	(void)av;
-	// i = -1;
 	pipe = 0;
-	// cmd = 0;
-	// redir = 0;
-	// cpy_env = copy_env(envp);
+	cpy_env = copy_env(envp);
 	while (1)
 	{
 		line = readline("Minishell $ ");
@@ -581,11 +648,9 @@ int	main(int ac, char **av, char **envp)
 			//exit
 		if (line[0] != ' ' && line[0] != 0)
 			add_history(line);
-		pipe = check_line(line, &pipe);
+		check_line(line, &pipe, cpy_env);
 		print_linked_list(pipe);
-		// command = 0;
-		// cmd = 0;
-		// i = -1;
+		free_list(&pipe);
 	}
 	return (0);
 }
@@ -608,10 +673,6 @@ void	print_redir(t_redir *redir)
 
 void	print_struct(t_cmd *cmd)
 {
-	// printf("Path :\n");
-	// for(int i = 0; cmd->path[i]; i++)
-	// 	printf("%s\n", cmd->path[i]);
-	// printf("Cmd with args :\n");
 	if (!cmd)
 	{
 		printf("NULL\n");
@@ -629,6 +690,12 @@ void	print_struct(t_cmd *cmd)
 	}
 	else
 		printf("\ncmd->cmd : (null)\n");
+	// if (cmd->path)
+	// {
+	// 	printf("Path :\n");
+	// 	for(int i = 0; cmd->path[i]; i++)
+	// 		printf("%s\n", cmd->path[i]);
+	// }
 	printf("Is that a builtin : %d\n", cmd->builtin);
 	printf("Cmd path : %s\n", cmd->path_cmd);
 	if (cmd->redir)
