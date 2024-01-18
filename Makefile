@@ -6,11 +6,11 @@
 #    By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/29 23:25:19 by bsuc              #+#    #+#              #
-#    Updated: 2024/01/18 15:57:42 by bsuc             ###   ########.fr        #
+#    Updated: 2024/01/18 20:04:45 by bsuc             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRC = src/parsing.c src/sanitize.c  src/manage_list.c
+SRC = src/parsingbis.c src/sanitize.c  src/manage_list.c
 OBJ = $(SRC:.c=.o)
 NAME = minishell
 RM = rm -f

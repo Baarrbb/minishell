@@ -152,7 +152,9 @@ static int	error_syntax(char **args, char *line)
 	char	*token;
 
 	token = 0;
-	if (line[0] == 0 && !args[1])
+	if (line[0] == '|')
+		token = "|";
+	else if (line[0] == 0 && !args[1])
 		token = "newline";
 	else if ((line[0] == '>' && line[1] == '>')
 		|| (args[1] && args[1][0] == '>' && args[1][1] == '>'))
@@ -196,78 +198,105 @@ static int	check_syntax_redir(char **args)
 	return (1);
 }
 
-static int	check_syntax(char **args)
+static int	check_syntax_pipe(char **args, int size)
 {
-	// check_syntax_pipe(args, size);
-	return (check_syntax_redir(args));
+	if (args[0][0] == '|' && args[0][1] == '|')
+	{
+		printf("%s`||\'\n", ERROR_MSG);
+		return (0);
+	}
+	else if (args[0][0] == '|')
+	{
+		printf("%s`|\'\n", ERROR_MSG);
+		return (0);
+	}
+	else if (args[size - 1][0] == '|')
+	{
+		printf("%s`|\'\n", ERROR_MSG);
+		return (0);
+	}
+	return (1);
 }
 
-static int	check_line(char *line)
+static int	check_syntax(char **args, int size)
 {
-	printf(".%s.\n", line);
+	return (check_syntax_redir(args) && check_syntax_pipe(args, size));
+}
+
+static t_cmd	*fill_cmd(t_cmd **pipe, char **args)
+{
+	int	i;
+
+	i = -1;
+	cmd = ft_calloc(1, sizeof(t_cmd *))
+	while (args[++i])
+	{
+		if (!ft_strncmp(args[i], ">", ft_strlen(args[i])))
+		{
+
+		}
+		else if (!ft_strncmp(args[i], ">>", ft_strlen(args[i])))
+		{
+			
+		}
+		else if (!ft_strncmp(args[i], "<", ft_strlen(args[i])))
+		{
+			
+		}
+		else if (!ft_strncmp(args[i], "<<", ft_strlen(args[i])))
+		{
+			
+		}
+		else if (!ft_strncmp(args[i], "|", ft_strlen(args[i])))
+		{
+			
+		}
+		else
+		{
+
+		}
+	}
+}
+
+static t_cmd	*check_line(char *line, t_cmd *cmd, t_cmd **pipe)
+{
+	char	**args;
+	int		size;
+
 	if (!check_quote(line))
 	{
 		printf("minishell: syntax error quote expected\n");
 		return (0);
 	}
-	char **args = ft_calloc(get_nb_args(line) + 1, sizeof(char *));
+	size = get_nb_args(line);
+	args = ft_calloc(size + 1, sizeof(char *));
 	if (!args)
 		return (0);
-	// printf("nb args %d\n",get_nb_args(line));
 	fill_args(args, line);
 	for(int i = 0; args[i]; i++)
 		printf("%d : .%s.\n", i, args[i]);
 	printf("\n");
-	if(!check_syntax(args))
+	if(!check_syntax(args, size))
 		return (0);
-	return (1);
+	return (fill_cmd(pipe, line));
 }
+
+
 
 int main(void)
 {
-	printf("\n1\n");
-	check_line("  \"cat line | lala\"   "); // 1
-	printf("\n2\n");
-	check_line("cat   \"line | lala\"  "); // 2
-	printf("\n3\n");
-	check_line("  cat < test > \"line | lala\"  "); // 5
-	printf("\n4\n");
-	check_line("  cat < test > line | wc "); // 7
-	printf("\n5\n");
-	check_line("  cat<test>>line|wc>\"lalala\""); // 10
+	t_cmd *cmd = 0;
+	t_cmd *pipe = 0;
 
-	printf("\n6\n");
-	check_line(">"); 
-	printf("\n7\n");
-	check_line("<"); 
-	printf("\n8\n");
-	check_line("  >> "); 
-	printf("\n9\n");
-	check_line("  << ");
-	printf("\n10\n");
-	check_line("  >> ");
-	
-	printf("\n12\n");
-	check_line(">>>>>");
-	printf("\n13\n");
-	check_line(">>>>>>>>>>>>");
-	printf("\n14\n");
-	check_line("<<<<<");
-	printf("\n15\n");
-	check_line("<<<<<<<<<<");
-	printf("\n16\n");
-	check_line("> > > >");
-	printf("\n17\n");
-	check_line(">> >> >> >>");
-	printf("\n18\n");
-	check_line(">>>> >> >> >>");
-	printf("\n19\n");
-	check_line("< < < <");
-	printf("\n20\n");
-	check_line("<< << << <<");
-	printf("\n21\n");
-	check_line("<<<< << << <<");
-	printf("\n11\n");
-	check_line("  <> ");
+	printf("\n1\n");
+	check_line("  \"cat line | lala\"   ", &cmd, &pipe); // 1
+	printf("\n2\n");
+	check_line("cat   \"line | lala\"  ", &cmd, &pipe); // 2
+	printf("\n3\n");
+	check_line("  cat < test > \"line | lala\"  ", &cmd, &pipe); // 5
+	printf("\n4\n");
+	check_line("  cat < test > line | wc ", &cmd, &pipe); // 7
+	printf("\n5\n");
+	check_line("  cat<test>>line|wc>\"lalala\"", &cmd, &pipe); // 10
 
 }
