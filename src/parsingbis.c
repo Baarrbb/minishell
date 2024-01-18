@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:36:10 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/18 21:05:30 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/18 21:21:45 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -359,6 +359,7 @@ static char	**copy_env(char **envp)
 
 static	void	init_redir(t_cmd **cmd, char **args, int type)
 {
+	printf("init_redir\n");
 	t_redir	*new;
 	t_redir	*redir;
 
@@ -380,47 +381,77 @@ static	void	init_redir(t_cmd **cmd, char **args, int type)
 	(*cmd)->redir = redir;
 }
 
-static t_cmd	*fill_cmd(t_cmd **pipe, char **args)
+static void	get_cmd(t_cmd **cmd, char **args)
 {
-	t_cmd	*cmd;
+	printf("get_cmd\n");
+	int	nb_args;
 	int	i;
 
+	nb_args = 0;
 	i = -1;
+	while (args[++i] && ft_strncmp(args[i], ">", 1) && ft_strncmp(args[i], ">>", 2)
+		&& ft_strncmp(args[i], "<", 1) && ft_strncmp(args[i], "<<", 2)
+		&& ft_strncmp(args[i], "|", 1))
+		nb_args++;
+	(*cmd)->cmd = ft_calloc(nb_args + 1, sizeof(char *));
+	if (!(*cmd)->cmd)
+		return ;
+	i = -1;
+	while (args[++i] && ft_strncmp(args[i], ">", 1) && ft_strncmp(args[i], ">>", 2)
+		&& ft_strncmp(args[i], "<", 1) && ft_strncmp(args[i], "<<", 2)
+		&& ft_strncmp(args[i], "|", 1))
+		(*cmd)->cmd[i] = ft_strdup(args[i]);
+}
+
+static t_cmd	*fill_cmd(t_cmd **pipe, char **args, int i)
+{
+	t_cmd	*cmd;
+	// int	i;
+	int	j;
+
+	j = 0;
+	// i = 0;
 	cmd = ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
 		return (0);
 	ft_memset(cmd, 0, sizeof(t_cmd));
-	while (args[++i])
+	while (args[i])
 	{
+		printf("arg %s\n", args[i]);
 		if (!ft_strncmp(args[i], ">", ft_strlen(args[i])))
 		{
 			init_redir(&cmd, &args[i], 1);
-			i++;
+			i += 2;
 		}
 		else if (!ft_strncmp(args[i], ">>", ft_strlen(args[i])))
 		{
 			init_redir(&cmd, &args[i], 2);
-			i++;
+			i += 2;
 		}
 		else if (!ft_strncmp(args[i], "<", ft_strlen(args[i])))
 		{
 			init_redir(&cmd, &args[i], 3);
-			i++;
+			i += 2;
 		}
 		else if (!ft_strncmp(args[i], "<<", ft_strlen(args[i])))
 		{
 			init_redir(&cmd, &args[i], 4);
-			i++;
+			i += 2;
 		}
-		// else if (!ft_strncmp(args[i], "|", ft_strlen(args[i])))
-		// {
-		// 	ft_lstadd_back_bis(pipe, fill_cmd(pipe, &args[i]));
-		// 	i++;
-		// }
-		// else
-		// {
-			
-		// }
+		else if (!ft_strncmp(args[i], "|", ft_strlen(args[i])))
+		{
+			ft_lstadd_back_bis(pipe, fill_cmd(pipe, &args[i + 1], i++));
+			i += 2;
+		}
+		else
+		{
+			get_cmd(&cmd, &args[i]);
+			while (cmd->cmd[j])
+			{
+				i++;
+				j++;
+			}
+		}
 	}
 	return (cmd);
 }
@@ -445,7 +476,7 @@ static t_cmd	*check_line(char *line, t_cmd **pipe)
 	printf("\n");
 	if(!check_syntax(args, size))
 		return (0);
-	return (fill_cmd(pipe, args));
+	return (fill_cmd(pipe, args, 0));
 }
 
 
