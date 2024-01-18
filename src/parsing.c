@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/17 20:36:11 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/18 15:52:48 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -724,6 +724,16 @@ static int	count_pipe(char *line)
 		line++;
 	}
 	return (count);
+}
+
+static int	check_line(char *line)
+{
+	if (!check_quote(line))
+	{
+		printf("minishell: syntax error quote expected\n");
+		return (0);
+	}
+	
 }
 
 int	main(int ac, char **av, char **envp)
