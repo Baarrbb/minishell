@@ -1,43 +1,39 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   manage_list.c                                      :+:      :+:    :+:   */
+/*   builtins.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/02 20:28:14 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 00:21:01 by bsuc             ###   ########.fr       */
+/*   Created: 2024/01/19 00:14:03 by bsuc              #+#    #+#             */
+/*   Updated: 2024/01/19 00:18:31 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#ifndef BUILTINS_H
+# define BUILTINS_H
 
-void	ft_lstadd_back(t_redir **lst, t_redir *new)
-{
-	t_redir	*tmp;
+# define ERROR_CD "minishell: cd:"
 
-	if (*lst == NULL)
-	{
-		*lst = new;
-		return ;
-	}
-	tmp = *lst;
-	while (tmp->next)
-		tmp = tmp->next;
-	tmp->next = new;
-}
+/* ECHO_C */
 
-void	ft_lstadd_back_bis(t_cmd **lst, t_cmd *new)
-{
-	t_cmd	*tmp;
 
-	if (*lst == NULL)
-	{
-		*lst = new;
-		return ;
-	}
-	tmp = *lst;
-	while (tmp->next)
-		tmp = tmp->next;
-	tmp->next = new;
-}
+/*  CD_C  */
+void	our_cd(t_cmd *cmd, char **env);
+
+/* PWD_C */
+
+
+/* EXPORT_C */
+
+
+/* UNSET_C */
+
+
+/* ENV_C */
+void	our_env(char **env);
+
+/* EXIT_C */
+
+
+#endif

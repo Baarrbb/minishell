@@ -6,17 +6,11 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/30 18:33:59 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/17 19:36:42 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 00:24:27 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "parsing.h"
-
-int	return_free(char *tofree, int ret)
-{
-	free(tofree);
-	return (ret);
-}
+#include "minishell.h"
 
 void	free_char_tab(char **tab)
 {
@@ -46,36 +40,6 @@ static void	free_redir(t_redir **redir)
 		}
 	}
 	*redir = 0;
-}
-
-// void	free_struct(t_cmd *cmd)
-// {
-// 	if (cmd)
-// 	{
-// 		if (cmd->path)
-// 			free_char_tab(cmd->path);
-// 		if (cmd->cmd)
-// 			free_char_tab(cmd->cmd);
-// 		free_redir(&(cmd->redir));
-// 		free(cmd->path_cmd);
-// 		free(cmd);
-// 		cmd = 0;
-// 	}
-// }
-
-void	free_struct(t_cmd **cmd)
-{
-	if (cmd)
-	{
-		if ((*cmd)->path)
-			free_char_tab((*cmd)->path);
-		if ((*cmd)->cmd)
-			free_char_tab((*cmd)->cmd);
-		free_redir(&((*cmd)->redir));
-		free((*cmd)->path_cmd);
-		free(*cmd);
-		*cmd = 0;
-	}
 }
 
 void	free_list(t_cmd **list)

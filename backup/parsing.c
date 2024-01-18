@@ -1,450 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parsing.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/12/29 22:26:22 by bsuc              #+#    #+#             */
+/*   Updated: 2024/01/18 23:47:37 by bsuc             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-# include <stdlib.h>
-# include <unistd.h>
-# include <stdint.h>
-#include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <unistd.h>
+#include "parsing.h"
 
-# define BOLD "\x1b[1m"
-# define RED "\x1b[31m"
-# define RESET "\x1b[0m"
-# define ERROR_MSG "bash: syntax error near unexpected token "
-
-
-
-typedef struct s_redir
-{
-	int		out;
-	int		out_end;
-	int		in;
-	int		in_read;
-	char	*filename;
-	struct s_redir	*next;
-}	t_redir;
-
-typedef struct s_cmd
-{
-	char			**path;
-	char			**cmd;
-	int				builtin;
-	char			*path_cmd;
-	int				exit_val;
-	int				*cmd_quote; //tableau int pour quote 1 = sg 2 = db
-	t_redir			*redir;
-	struct s_cmd	*next;
-}	t_cmd;
-
-void	print_linked_list(t_cmd *pipe);
-void	print_struct(t_cmd *cmd);
-void	print_redir(t_redir *redir);
-
-size_t	ft_strlen(const char *s)
-{
-	size_t	i;
-
-	if (!s)
-		return (0);
-	i = 0;
-	while (s[i])
-		i++;
-	return (i);
-}
-
-void	ft_bzero(void *s, size_t n)
-{
-	char	*str;
-	size_t	i;
-
-	str = (char *)s;
-	i = 0;
-	while (i < n)
-	{
-		str[i] = 0;
-		i++;
-	}
-}
-
-void	*ft_calloc(size_t nmemb, size_t size)
-{
-	void	*ret;
-
-	if (size > 0 && nmemb > (SIZE_MAX / size))
-		return (NULL);
-	ret = malloc(nmemb * size);
-	if (!ret)
-		return (NULL);
-	ft_bzero(ret, nmemb * size);
-	return (ret);
-}
-
-char	*ft_substr(const char *s, unsigned int start, size_t len)
-{
-	char	*ret;
-	size_t	s_len;
-
-	if (!s)
-		return (NULL);
-	s_len = ft_strlen(s);
-	if (start >= s_len || !len)
-	{
-		ret = (char *)ft_calloc(1, sizeof(char));
-		if (!ret)
-			return (NULL);
-		return (ret);
-	}
-	if (len >= s_len)
-		len = s_len - start;
-	else if (len > s_len - start)
-		len--;
-	ret = (char *)ft_calloc((len + 1), sizeof(char));
-	if (!ret)
-		return (NULL);
-	s += start + (len - 1);
-	ret += len;
-	while (len--)
-		*--ret = *s--;
-	return (ret);
-}
-
-int	ft_isprint(int c)
-{
-	if (c >= ' ' && c <= '~')
-		return (1);
-	return (0);
-}
-
-void	*ft_memset(void *s, int c, size_t n)
-{
-	size_t			i;
-	unsigned char	*str;
-
-	i = 0;
-	str = (unsigned char *)s;
-	while (i < n)
-	{
-		*str++ = (unsigned char)c;
-		i++;
-	}
-	return (s);
-}
-
-static int	count_words(char *s, char c)
-{
-	int	count;
-	int	i;
-
-	count = 0;
-	i = 0;
-	while (s[i])
-	{
-		while (s[i] == c && s[i])
-			i++;
-		if (s[i] != c && s[i])
-		{
-			count++;
-			i++;
-		}
-		while (s[i] != c && s[i])
-			i++;
-	}
-	return (count);
-}
-
-static char	**malloc_free(char	**tab)
-{
-	int	i;
-
-	i = 0;
-	while (tab[i])
-	{
-		free(tab[i]);
-		i++;
-	}
-	free(tab);
-	return (NULL);
-}
-
-static char	*malloc_word(char *s, char c)
-{
-	int		i;
-	int		j;
-	char	*word;
-
-	i = 0;
-	j = 0;
-	while (s[i] != c && s[i])
-		i++;
-	word = (char *)malloc((i + 1) * sizeof(char));
-	if (!word)
-		return (NULL);
-	while (j < i)
-	{
-		word[j++] = (char)*s++;
-	}
-	word[j] = '\0';
-	return (word);
-}
-
-static char	**insert_words(char **words, char *s, char c)
-{
-	int	i;
-
-	i = 0;
-	while (*s)
-	{
-		while (*s && (char)*s == c)
-			s++;
-		if (*s && (char)*s != c)
-		{
-			words[i] = malloc_word(s, c);
-			if (!words[i])
-				return (malloc_free(words));
-			i++;
-		}
-		while (*s && (char)*s != c)
-			s++;
-	}
-	words[i] = NULL;
-	return (words);
-}
-
-char	**ft_split(const char *s, char c)
-{
-	int		count;
-	char	**split;
-
-	if (!s)
-		return (NULL);
-	count = count_words((char *)s, c);
-	split = (char **)malloc((count + 1) * sizeof(char *));
-	if (!split)
-		return (NULL);
-	split = insert_words(split, (char *)s, c);
-	return (split);
-}
-
-char	*ft_strchr(const char *s, int c)
-{
-	while (*s)
-	{
-		if ((unsigned char)*s == (unsigned char)c)
-			return ((char *)s);
-		s++;
-	}
-	if (!(unsigned char)c)
-		return ((char *)s);
-	return (NULL);
-}
-
-char	*ft_strdup(const char *s)
-{
-	char	*dest;
-	int		len;
-	int		i;
-
-	i = 0;
-	len = ft_strlen(s) + 1;
-	dest = (char *)malloc(len * sizeof(char));
-	if (dest == NULL)
-		return (NULL);
-	while (s[i])
-	{
-		dest[i] = s[i];
-		i++;
-	}
-	dest[i] = '\0';
-	return (dest);
-}
-
-int	ft_strncmp(const char *s1, const char *s2, size_t n)
-{
-	size_t		i;
-
-	i = 0;
-	if (n == 0)
-		return (0);
-	while (s1[i] && s2[i] && i < n - 1 && s1[i] == s2[i])
-		i++;
-	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
-}
-
-char	*ft_strnstr(const char *big, const char *little, size_t len)
-{
-	size_t	count;
-	size_t	llen;
-
-	if (!big && len == 0)
-		return (NULL);
-	llen = ft_strlen(little);
-	if (llen == 0)
-		return ((char *)big);
-	count = 0;
-	while (*big && count < len)
-	{
-		if ((ft_strncmp((char *)big, (char *)little, llen) == 0)
-			&& count + llen <= len)
-		{
-			return ((char *)big);
-		}
-		big++;
-		count++;
-	}
-	return (0);
-}
-
-static int	ischarset(char c, char *set)
-{
-	int	i;
-
-	i = 0;
-	while (set[i])
-	{
-		if (c == set[i])
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
-static int	ncharset(char const *s1, char const *set)
-{
-	int		i;
-	int		count;
-
-	i = 0;
-	count = 0;
-	while (ischarset(s1[i], (char *)set) && s1[i])
-	{
-		count++;
-		i++;
-	}
-	if (!s1[i])
-		return (count);
-	i = ft_strlen(s1) - 1;
-	while (ischarset(s1[i], (char *)set) && i != 0)
-	{
-		count++;
-		i--;
-	}
-	return (count);
-}
-
-char	*ft_strtrim(const char *s1, const char *set)
-{
-	int		i;
-	int		len;
-	char	*s;
-
-	if (!s1 || !set)
-		return (NULL);
-	i = 0;
-	len = ft_strlen(s1) - ncharset(s1, set);
-	while (ischarset((char)s1[i], (char *)set))
-		i++;
-	s = ft_substr(s1, i, len);
-	return (s);
-}
-
-void	ft_lstadd_back(t_redir **lst, t_redir *new)
-{
-	t_redir	*tmp;
-
-	if (*lst == NULL)
-	{
-		*lst = new;
-		return ;
-	}
-	tmp = *lst;
-	while (tmp->next)
-		tmp = tmp->next;
-	tmp->next = new;
-}
-
-void	ft_lstadd_back_bis(t_cmd **lst, t_cmd *new)
-{
-	t_cmd	*tmp;
-
-	if (*lst == NULL)
-	{
-		*lst = new;
-		return ;
-	}
-	tmp = *lst;
-	while (tmp->next)
-		tmp = tmp->next;
-	tmp->next = new;
-}
-
-int	return_free(char *tofree, int ret)
-{
-	free(tofree);
-	return (ret);
-}
-
-void	free_char_tab(char **tab)
-{
-	int	i;
-
-	i = -1;
-	if (*tab)
-	{
-		while (tab[++i])
-			free(tab[i]);
-	}
-	if (tab)
-		free(tab);
-}
-
-static void	free_redir(t_redir **redir)
-{
-	t_redir	*tmp;
-
-	while (*redir)
-	{
-		tmp = (*redir)->next;
-		free((*redir)->filename);
-		free(*redir);
-		*redir = tmp;
-	}
-	*redir = 0;
-}
-
-void	free_struct(t_cmd *cmd)
-{
-	if (cmd->path)
-		free_char_tab(cmd->path);
-	if (cmd->cmd)
-		free_char_tab(cmd->cmd);
-	free_redir(&(cmd->redir));
-	free(cmd->path_cmd);
-	free(cmd);
-}
-
-void	free_list(t_cmd **list)
-{
-	t_cmd	*tmp;
-
-	if (list)
-	{
-		while (*list)
-		{
-			if ((*list)->path)
-				free_char_tab((*list)->path);
-			if ((*list)->cmd)
-				free_char_tab((*list)->cmd);
-			free_redir(&((*list)->redir));
-			free((*list)->path_cmd);
-			tmp = (*list)->next;
-			free(*list);
-			*list = tmp;
-		}
-		*list = 0;
-	}
-}
-
-static char	**get_cmd_w_redir(char *line);
+static char		**get_cmd_w_redir(char *line);
 static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir);
 static	void	fill_cmd(t_cmd *cmd, char *line, char **envp);
 
@@ -502,14 +70,82 @@ int	is_space(int c)
 	return (0);
 }
 
-static char **copy_env(char **envp)
+char	*get_ourenv(char *tofind, char **ourenv, char *sortie)
+{
+	int	i;
+
+	i = 0;
+	if (ourenv)
+	{
+		while (ourenv[i])
+		{
+			if (ft_strncmp(ourenv[i], tofind, ft_strlen(tofind)) == 0)
+				return (ft_strdup(&ourenv[i][ft_strlen(tofind) + 1]));
+			i++;
+		}
+	}
+	if (ft_strncmp(tofind, "?=\0", ft_strlen(tofind) + 1) == 0)
+		return (sortie);
+	return (NULL);
+}
+
+static void	add_shlvl(char **envp)
+{
+	int		i;
+	int		j;
+	char	*new;
+
+	i = -1;
+	while (envp[++i])
+	{
+		if (!ft_strncmp(envp[i], "SHLVL", ft_strlen("SHLVL")))
+		{
+			j = 0;
+			while (envp[i][j] != '=')
+				j++;
+			j += 1;
+			if (ft_atoi(envp[i] + j))
+			{
+				new = ft_itoa(ft_atoi(envp[i] + j) + 1);
+				free(envp[i]);
+				envp[i] = 0;
+				envp[i] = strjoin(ft_strdup("SHLVL="), new);
+				free(new);
+			}
+		}
+	}
+}
+
+static char **copy_env_null(void)
+{
+	char	**new_env;
+	char	pwd[PATH_MAX];
+
+	getcwd(pwd, PATH_MAX);
+	new_env = ft_calloc(4, sizeof(char *));
+	if (!new_env)
+		return (0);
+	new_env[0] = strjoin(new_env[0], "PWD=");
+	new_env[0] = strjoin(new_env[0], pwd);
+	new_env[1] = strjoin(new_env[1], "SHLVL=");
+	new_env[1] = strjoin(new_env[1], "1");
+	new_env[2] = strjoin(new_env[2], "_=");
+	new_env[2] = strjoin(new_env[2], "./minishell");
+	return (new_env);
+}
+
+static char	**copy_env(char **envp)
 {
 	int		i;
 	char	**cpy_env;
 
 	i = 0;
 	if (!envp[0])
-		return (0);
+	{
+		cpy_env = copy_env_null();
+		add_shlvl(cpy_env);
+		return (cpy_env);
+	}
 	while (envp[i])
 		i++;
 	cpy_env = ft_calloc(i + 1, sizeof(char *));
@@ -518,6 +154,7 @@ static char **copy_env(char **envp)
 	i = -1;
 	while (envp[++i])
 		cpy_env[i] = ft_strdup(envp[i]);
+	add_shlvl(cpy_env);
 	return (cpy_env);
 }
 
@@ -531,7 +168,7 @@ static char	**get_path(char **envp)
 	i = -1;
 	path = 0;
 	del_path = 0;
-	if(!envp)
+	if (!envp)
 		return (0);
 	while (envp[++i])
 	{
@@ -542,7 +179,8 @@ static char	**get_path(char **envp)
 			break ;
 		}
 	}
-	free_char_tab(del_path);
+	if (del_path)
+		free_char_tab(del_path);
 	return (path);
 }
 
@@ -557,7 +195,7 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 		return (0);
 	full_cmd = 0;
 	i = -1;
-	wo_param = ft_split (cmd1, ' ');
+	wo_param = ft_split(cmd1, ' ');
 	while (cmd->path[++i])
 	{
 		full_cmd = strjoin(full_cmd, cmd->path[i]);
@@ -574,6 +212,10 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 	free_char_tab(wo_param);
 	return (0);
 }
+
+
+
+
 
 static int	check_quote(char *line)
 {
@@ -616,10 +258,10 @@ static int	get_nb_args(char *line)
 	{
 		while (is_space(line[i]) && line[i])
 			i++;
-		while(!is_space(line[i]) && line[i])
+		while (!is_space(line[i]) && line[i])
 		{
 			if (line[i] == '>' || line[i] == '<')
-				break;
+				break ;
 			if (line[i] == '\'' && line[i])
 			{
 				i++;
@@ -643,7 +285,7 @@ static int	get_nb_args(char *line)
 	return (count);
 }
 
-static char **fill_args_w_quote(char **args, char *line)
+static char	**fill_args_w_quote(char **args, char *line)
 {
 	char	*arg;
 	int		i;
@@ -656,10 +298,10 @@ static char **fill_args_w_quote(char **args, char *line)
 	{
 		while (is_space(*line) && *line)
 			line++;
-		while(!is_space(line[i]) && line[i])
+		while (!is_space(line[i]) && line[i])
 		{
 			if (line[i] == '>' || line[i] == '<')
-				break;
+				break ;
 			if (line[i] == '\'' && line[i])
 			{
 				i++;
@@ -686,7 +328,7 @@ static char **fill_args_w_quote(char **args, char *line)
 	return (args);
 }
 
-static char **args_w_quote(char *line)
+static char	**args_w_quote(char *line)
 {
 	int		size;
 	char	**args;
@@ -702,11 +344,7 @@ static char **args_w_quote(char *line)
 static char	**get_cmd(char *line)
 {
 	printf("get_cmd\n");
-	char	**tmp;
-	char	**quote;
 
-	tmp = 0;
-	quote = 0;
 	if (!ft_strchr(line, '\'') && !ft_strchr(line, '\"'))
 	{
 		if (ft_strchr(line, '<') || ft_strchr(line, '>'))
@@ -725,6 +363,7 @@ static char	**get_cmd_w_redir(char *line)
 	char	*cmd;
 	char	*cmd_trim;
 	char	**cmd_args;
+
 	i = 0;
 	while (line[i] != '<' && line[i] != '>')
 		i++;
@@ -744,8 +383,6 @@ static char	**get_cmd_w_redir(char *line)
 	return (cmd_args);
 }
 
-//tous les caracteres speciaux sauf space tab newline
-// metacharacters : | & ; ( ) < > ; $
 static int	is_spe_char(int c)
 {
 	// printf("is_spe_char\n");
@@ -763,10 +400,10 @@ static int	file_char(int c)
 	return (0);
 }
 
-static void	error_syntax(char *line)
+static int	error_syntax(char *line, t_cmd **cmd)
 {
 	printf("error_syntax\n");
-	char *token;
+	char	*token;
 
 	token = 0;
 	if (line[0] == 0)
@@ -779,17 +416,24 @@ static void	error_syntax(char *line)
 		token = ">";
 	else if (line[0] == '<')
 		token = "<";
-	printf("%s`%s\'\n", ERROR_MSG, token);
+	if (token)
+	{
+		printf("%s`%s\'\n", ERROR_MSG, token);
+		free_struct(cmd);
+		return (1);
+	}
+	return (0);
 }
 
-static char	*test_filename(char *line)
+static char	*test_filename(char *line, t_cmd *cmd)
 {
+	printf("test filename\n");
 	int	i;
 	int	count;
 
 	i = 0;
 	count = 0;
-	while(!is_space(line[i]) && line[i])
+	while (!is_space(line[i]) && line[i] && !is_spe_char(line[i]))
 	{
 		if (line[i] == '\'' && line[i])
 		{
@@ -810,56 +454,34 @@ static char	*test_filename(char *line)
 				count++;
 				i++;
 			}
-			if (count == 0)
-			{
-				error_syntax(line);
+			if (error_syntax(line, &cmd))
 				return (0);
-			}
+			// if (count == 0)
+			// {
+			// 	error_syntax(line, &cmd);
+			// 	return (0);
+			// }
 		}
 	}
 	return(ft_substr(line, 0, i));
 }
 
-static char	*get_filename(t_redir *redir, char *line)
+static char	*get_filename(t_cmd **cmd, t_redir *redir, char *line)
 {
 	printf("get_filename\n");
 	int		i;
-	int		count;
-	char	*filename;
-	char	*filetrim;
 
 	i = -1;
-	count = 0;
 	if (!redir->out && !redir->in && !redir->out_end && !redir->in_read)
 		return (0);
 	if (redir->out || redir->in)
 		line++;
 	else if (redir->out_end || redir->in_read)
 		line += 2;
-	while (line[++i] == ' ' && *line)
-		line++;
-	i = -1;
-	// while (file_char(line[++i]))
-	// 	count++;
-	// if (count == 0)
-	// {
-	// 	error_syntax(line);
-	// 	return (0);
-	// }
-	// filename = ft_calloc((count + 1), sizeof(char));
-	// if (!filename)
-	// 	return (0);
-	// i = 0;
-	// while (file_char((int)*line))
-	// {
-	// 	filename[i] = (int)*line;
-	// 	line++;
-	// 	i++;
-	// }
-	// filetrim = ft_strtrim(filename, " ");
-	// free(filename);
-	// redir->filename = filetrim;
-	redir->filename = test_filename(line);
+	line = trim_space(line);
+	if (error_syntax(line, cmd))
+		return (0);
+	redir->filename = test_filename(line, *cmd);
 	line += ft_strlen(redir->filename);
 	if (*line == 0)
 		return (0);
@@ -916,9 +538,8 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 
 	linetrim = ft_strdup(line);
 	tmp = linetrim;
-	while (*linetrim)
+	while (*linetrim && linetrim[0])
 	{
-		i = -1;
 		new = ft_calloc(1, sizeof(t_redir));
 		if (!new)
 			return (0);
@@ -930,7 +551,7 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 			free(tmp);
 			return (0);
 		}
-		linetrim = get_filename(new, linetrim);
+		linetrim = get_filename(&cmd, new, linetrim);
 		if (!new->filename && !cmd)
 		{
 			free(new);
@@ -946,8 +567,13 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 		linetrim = trim_space(linetrim);
 		if (!cmd->cmd && linetrim[0] != '>' && linetrim[0] != '<')
 		{
+			i = -1;
 			fill_cmd(cmd, linetrim, envp);
-			linetrim += ft_strlen(cmd->cmd[0]);
+			while (cmd->cmd[++i])
+			{
+				linetrim = trim_space(linetrim);
+				linetrim += ft_strlen(cmd->cmd[i]);
+			}
 		}
 		else if (linetrim[0] != '>' && linetrim[0] != '<' && ft_strlen(linetrim))
 		{
@@ -979,7 +605,7 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 			new_cmd->builtin = cmd->builtin;
 			if (cmd->path_cmd)
 				new_cmd->path_cmd = ft_strdup(cmd->path_cmd);
-			free_struct(cmd);
+			free_struct(&cmd);
 			cmd = new_cmd;
 		}
 	}
@@ -987,6 +613,11 @@ static	t_cmd	*init_redir(t_cmd *cmd, t_redir *redir, char *line, char **envp)
 	free(tmp);
 	return (cmd);
 }
+
+
+
+
+
 
 static void	is_builtin(t_cmd *cmd)
 {
@@ -1022,23 +653,39 @@ static t_cmd	*init_cmd(char *line, char **envp, t_redir *redir)
 	printf("init_cmd\n");
 	t_cmd	*cmd;
 	int		len;
+	char	*linetrim;
+	char	*tmp;
+	int		i;
 
 	cmd = (t_cmd *)ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
 		return (0);
 	ft_memset(cmd, 0, sizeof(t_cmd));
+	cmd->line = line;
 	if (line[0] != '<' && line[0] != '>')
 		fill_cmd(cmd, line, envp);
-	len = ft_strlen(line);
-	if (ft_strnstr(line, ">", len) || ft_strnstr(line, "<", len))
-	{	
-		cmd = init_redir(cmd, redir, line, envp);
-		if (!cmd)
+	linetrim = ft_strdup(line);
+	tmp = linetrim;
+	if (cmd->cmd && cmd->cmd[0])
+	{
+		i = -1;
+		while (cmd->cmd[++i])
 		{
-			free_struct(cmd);
+			linetrim += ft_strlen(cmd->cmd[i]);
+			linetrim = trim_space(linetrim);
+		}
+	}
+	len = ft_strlen(linetrim);
+	if (ft_strnstr(linetrim, ">", len) || ft_strnstr(linetrim, "<", len))
+	{	
+		cmd = init_redir(cmd, redir, linetrim, envp);
+		if (!cmd || !cmd->redir)
+		{
+			free(tmp);
 			return (0);
 		}
 	}
+	free(tmp);
 	return (cmd);
 }
 
@@ -1064,7 +711,7 @@ static t_cmd *check_grammar_line(t_redir *redir, t_cmd *cmd, char *line, char **
 	}
 	if (!check_quote(line))
 	{
-		printf("bash: syntax error quote expected\n");
+		printf("minishell: syntax error quote expected\n");
 		free(linetrim);
 		return (0);
 	}
@@ -1086,6 +733,16 @@ static int	count_pipe(char *line)
 		line++;
 	}
 	return (count);
+}
+
+static int	check_line(char *line)
+{
+	if (!check_quote(line))
+	{
+		printf("minishell: syntax error quote expected\n");
+		return (0);
+	}
+	
 }
 
 int	main(int ac, char **av, char **envp)
@@ -1124,7 +781,7 @@ int	main(int ac, char **av, char **envp)
 			else
 			{
 				free_list(&pipe);
-				break;
+				break ;
 			}
 		}
 		if (yesh_pipe && i < yesh_pipe + 1)
@@ -1134,7 +791,7 @@ int	main(int ac, char **av, char **envp)
 			free_char_tab(command);
 			free_list(&pipe);
 		}
-		else
+		else if (pipe)
 		{
 			print_linked_list(pipe);
 			free(line);
@@ -1169,6 +826,11 @@ void	print_struct(t_cmd *cmd)
 	// for(int i = 0; cmd->path[i]; i++)
 	// 	printf("%s\n", cmd->path[i]);
 	// printf("Cmd with args :\n");
+	if (!cmd)
+	{
+		printf("NULL\n");
+		return ;
+	}
 	if (cmd->cmd)
 	{
 		for (int i = 0; cmd->cmd[i]; i++)

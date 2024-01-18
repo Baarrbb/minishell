@@ -6,11 +6,11 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 20:23:33 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/17 16:54:23 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 00:20:38 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "parsing.h"
+#include "minishell.h"
 
 static int	get_nb_args(t_cmd *cmd)
 {
@@ -24,7 +24,6 @@ static int	get_nb_args(t_cmd *cmd)
 	}
 	return (i);
 }
-
 
 //si on trouve pas OLDPWD 
 // (parex env -i ./minishell) faut quand meme rajouter la var OLDPWD
