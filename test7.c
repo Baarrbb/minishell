@@ -7,6 +7,16 @@ int	is_space(int c)
 	return (0);
 }
 
+char	*trim_space(char *line)
+{
+	if (line)
+	{
+		while (*line == ' ' || *line == '	')
+			line++;
+	}
+	return (line);
+}
+
 static int	is_spe_char(int c)
 {
 	// printf("is_spe_char\n");
@@ -18,7 +28,7 @@ static int	is_spe_char(int c)
 
 static int	check_quote(char *line)
 {
-	printf("check_quote\n");
+	// printf("check_quote\n");
 	while (*line != '\'' && *line != '\"' && *line)
 		line++;
 	while (*line)
@@ -73,11 +83,12 @@ static int	get_nb_args(char *line)
 			}
 			i++;
 		}
-		if (!is_space(line[i - 1]) && !is_spe_char(line[i - 1]))
+		if (i - 1 >= 0 && !is_space(line[i - 1]) && !is_spe_char(line[i - 1]))
 			count++;
 		if (is_spe_char(line[i]))
 		{
-			i++;
+			while (is_spe_char(line[i]) && line[i])
+				i++;
 			count++;
 		}
 		while (is_space(line[i]) && line[i])
@@ -88,13 +99,11 @@ static int	get_nb_args(char *line)
 
 static char	**fill_args(char **args, char *line)
 {
-	char	*arg;
 	int		i;
 	int		j;
 
 	i = 0;
 	j = 0;
-	arg = 0;
 	while (*line && line[i])
 	{
 		while (is_space(*line) && *line)
@@ -126,7 +135,8 @@ static char	**fill_args(char **args, char *line)
 		}
 		if (is_spe_char(line[i]))
 		{
-			i++;
+			while (is_spe_char(line[i]))
+				i++;
 			args[j] = ft_substr(line, 0, i);
 			j++;
 			line += i;
@@ -137,89 +147,64 @@ static char	**fill_args(char **args, char *line)
 	return (args);
 }
 
-static int	error_syntax(char **args)
+static int	error_syntax(char **args, char *line)
 {
 	char	*token;
-	int		i;
-	int		count_sup;
-	int		count_inf;
 
 	token = 0;
-	i = -1;
-	count_sup = 0;
-	count_inf = 0;
-	if (!ft_strncmp(args[0], ">", 2))
+	if (line[0] == 0 && !args[1])
+		token = "newline";
+	else if ((line[0] == '>' && line[1] == '>')
+		|| (args[1] && args[1][0] == '>' && args[1][1] == '>'))
+		token = ">>";
+	else if ((line[0] == '<' && line[1] == '<')
+		|| (args[1] && args[1][0] == '<' && args[1][1] == '<'))
+		token = "<<";
+	else if (line[0] == '>' || (args[1][0] == '>'))
+		token = ">";
+	else if (line[0] == '<' || (args[1][0] == '<'))
+		token = "<";
+	if (token)
 	{
-		while (args[++i] && !ft_strncmp(args[i], ">", 2))
-			count_sup++;
-	}
-	if (!ft_strncmp(args[0], "<\0", 2))
-	{
-		while (args[++i] && !ft_strncmp(args[i], "<\0", 2))
-			count_inf++;
-	}
-	if (count_sup >= 2)
-		printf("%s `>>'\n", ERROR_MSG);
-	else if (count_sup == 1)
-		printf("%s `>'\n", ERROR_MSG);
-	if (count_inf >= 2)
-		printf("%s `<<'\n", ERROR_MSG);
-	else if (count_inf == 1)
-		printf("%s `<'\n", ERROR_MSG);
-	return (0);
-}
-
-static int	check_syntax_redir(char **args, char *line)
-{
-	int	i;
-	int	count;
-
-	i = -1;
-	count = 0;
-	while (args[++i])
-	{
-		while (!ft_strncmp(args[i], ">\0", 2) && args[i])
-		{
-			if (!args[i + 1])
-			{
-				printf("%s `newline'\n", ERROR_MSG);
-				return (0);
-			}
-			count++;
-			if (count > 2)
-				return (error_syntax(&args[i]));
-			i++;
-			if (args[i + 1] && count > 2 && !ft_strncmp(args[i + 1], "<\0", 2))
-				return (error_syntax(&args[i + 1]));
-		}
-		count = 0;
-		while (!ft_strncmp(args[i], "<\0", 2) && args[i])
-		{
-			if (!args[i + 1])
-			{
-				printf("%s `newline'\n", ERROR_MSG);
-				return (0);
-			}
-			count++;
-			if (count > 2)
-				return (error_syntax(&args[i]));
-			i++;
-			if (args[i + 1] && count > 2 && !ft_strncmp(args[i + 1], ">\0", 2))
-				return (error_syntax(&args[i + 1]));
-		}
-		count = 0;
+		printf("%s`%s\'\n", ERROR_MSG, token);
+		return (0);
 	}
 	return (1);
 }
 
-static int	check_syntax(char **args, char *line)
+static int	check_syntax_redir(char **args)
+{
+	int	i;
+
+	i = -1;
+	while (args[++i])
+	{
+		if (args[i][0] == '<' && args[i][1] == '>')
+		{
+			printf("%s`newline\'\n", ERROR_MSG);
+			return (0);
+		}
+		else if (args[i][0] == '>' && args[i][1] == '>')
+			return (error_syntax(&args[i], &args[i][2]));
+		else if (args[i][0] == '<' && args[i][1] == '<')
+			return (error_syntax(&args[i], &args[i][2]));
+		else if (args[i][0] == '>' && args[i][1] != '>')
+			return (error_syntax(&args[i], &args[i][1]));
+		else if (args[i][0] == '<' && args[i][1] != '<')
+			return (error_syntax(&args[i], &args[i][1]));
+	}
+	return (1);
+}
+
+static int	check_syntax(char **args)
 {
 	// check_syntax_pipe(args, size);
-	return (check_syntax_redir(args, line));
+	return (check_syntax_redir(args));
 }
 
 static int	check_line(char *line)
 {
+	printf(".%s.\n", line);
 	if (!check_quote(line))
 	{
 		printf("minishell: syntax error quote expected\n");
@@ -228,54 +213,61 @@ static int	check_line(char *line)
 	char **args = ft_calloc(get_nb_args(line) + 1, sizeof(char *));
 	if (!args)
 		return (0);
-	int	size = get_nb_args(line);
-	// printf("nb args %d\n", size);
+	// printf("nb args %d\n",get_nb_args(line));
 	fill_args(args, line);
-	// for(int i = 0; args[i]; i++)
-	// 	printf("%d : .%s.\n", i, args[i]);
-	// printf("\n");
-	if(!check_syntax(args, line))
+	for(int i = 0; args[i]; i++)
+		printf("%d : .%s.\n", i, args[i]);
+	printf("\n");
+	if(!check_syntax(args))
 		return (0);
 	return (1);
 }
 
 int main(void)
 {
-	// printf("1\n");
-	// check_line("  \"cat line | lala\"   "); // 1
-	// printf("2\n");
-	// check_line("cat   \"line | lala\"  "); // 2
-	// printf("3\n");
-	// check_line("  cat < test > \"line | lala\"  "); // 5
-	// printf("4\n");
-	// check_line("  cat < test > line | wc "); // 7
-	// printf("5\n");
-	// check_line("  cat<test>>line|wc>\"lalala\""); // 10
+	printf("\n1\n");
+	check_line("  \"cat line | lala\"   "); // 1
+	printf("\n2\n");
+	check_line("cat   \"line | lala\"  "); // 2
+	printf("\n3\n");
+	check_line("  cat < test > \"line | lala\"  "); // 5
+	printf("\n4\n");
+	check_line("  cat < test > line | wc "); // 7
+	printf("\n5\n");
+	check_line("  cat<test>>line|wc>\"lalala\""); // 10
 
-	printf("6\n");
+	printf("\n6\n");
 	check_line(">"); 
-	printf("7\n");
+	printf("\n7\n");
 	check_line("<"); 
-	printf("8\n");
+	printf("\n8\n");
 	check_line("  >> "); 
-	printf("9\n");
+	printf("\n9\n");
 	check_line("  << ");
-	printf("10\n");
+	printf("\n10\n");
 	check_line("  >> ");
-	printf("11 a gerer differemment\n");
-	check_line("  <> "); //a voir
-	printf("12\n");
+	
+	printf("\n12\n");
 	check_line(">>>>>");
-	printf("13\n");
+	printf("\n13\n");
 	check_line(">>>>>>>>>>>>");
-	printf("14\n");
+	printf("\n14\n");
 	check_line("<<<<<");
-	printf("15\n");
+	printf("\n15\n");
 	check_line("<<<<<<<<<<");
-	printf("16\n");
+	printf("\n16\n");
 	check_line("> > > >");
-	printf("17\n");
+	printf("\n17\n");
 	check_line(">> >> >> >>");
-	printf("18\n");
+	printf("\n18\n");
 	check_line(">>>> >> >> >>");
+	printf("\n19\n");
+	check_line("< < < <");
+	printf("\n20\n");
+	check_line("<< << << <<");
+	printf("\n21\n");
+	check_line("<<<< << << <<");
+	printf("\n11\n");
+	check_line("  <> ");
+
 }
