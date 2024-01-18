@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:36:10 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/18 21:21:45 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/18 23:18:15 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -403,21 +403,89 @@ static void	get_cmd(t_cmd **cmd, char **args)
 		(*cmd)->cmd[i] = ft_strdup(args[i]);
 }
 
-static t_cmd	*fill_cmd(t_cmd **pipe, char **args, int i)
+// static void	add_arg(t_cmd **cmd, char **args)
+// {
+// 	printf("add_arg\n");
+// 	int		i;
+// 	int		j;
+// 	t_cmd	*new;
+// 	i = 0;
+// 	j = 0;
+// 	new = ft_calloc(1, sizeof(t_cmd));
+// 	if (!new)
+// 		return (0);
+// 	while ((*cmd)->cmd[i])
+// 		i++;
+// 	while (args[j] && ft_strncmp(args[j], ">", 1) && ft_strncmp(args[j], ">>", 2)
+// 		&& ft_strncmp(args[j], "<", 1) && ft_strncmp(args[j], "<<", 2)
+// 		&& ft_strncmp(args[j], "|", 1))
+// 		j++;
+// 	new->cmd = ft_calloc(i + j + 1, sizeof(char *));
+// 	if (!new->cmd)
+// 		return (0);
+// 	i = -1;
+// 	while ((*cmd)->cmd[++i])
+// 		new->cmd[i] = ft_strdup((*cmd)->cmd[i]);
+// 	j = -1;
+// 	while (args[++j] && ft_strncmp(args[j], ">", 1) && ft_strncmp(args[j], ">>", 2)
+// 		&& ft_strncmp(args[j], "<", 1) && ft_strncmp(args[j], "<<", 2)
+// 		&& ft_strncmp(args[j], "|", 1))
+// 	{
+// 		new->cmd[i] = ft_strdup(args[j]);
+// 		i++;
+// 	}
+// 	new->redir = (*cmd)->redir;
+// 	free_struct(cmd);
+// 	*cmd = &new;
+// }
+
+static void	add_arg(t_cmd **cmd, char **args)
+{
+	printf("add_arg\n");
+	int		i;
+	int		j;
+	char	**new_cmd;
+
+	i = 0;
+	j = 0;
+	while ((*cmd)->cmd[i])
+		i++;
+	while (args[j] && ft_strncmp(args[j], ">", 1) && ft_strncmp(args[j], ">>", 2)
+		&& ft_strncmp(args[j], "<", 1) && ft_strncmp(args[j], "<<", 2)
+		&& ft_strncmp(args[j], "|", 1))
+		j++;
+	new_cmd = ft_calloc(i + j + 1, sizeof(char *));
+	if (!new_cmd)
+		return ;
+	i = -1;
+	while ((*cmd)->cmd[++i])
+		new_cmd[i] = ft_strdup((*cmd)->cmd[i]);
+	j = -1;
+	while (args[++j] && ft_strncmp(args[j], ">", 1) && ft_strncmp(args[j], ">>", 2)
+		&& ft_strncmp(args[j], "<", 1) && ft_strncmp(args[j], "<<", 2)
+		&& ft_strncmp(args[j], "|", 1))
+	{
+		new_cmd[i] = ft_strdup(args[j]);
+		i++;
+	}
+	free_char_tab((*cmd)->cmd);
+	(*cmd)->cmd = new_cmd;
+}
+
+static t_cmd	*fill_cmd(t_cmd **pipe, char **args)
 {
 	t_cmd	*cmd;
-	// int	i;
+	int	i;
 	int	j;
 
-	j = 0;
-	// i = 0;
+	i = 0;
 	cmd = ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
 		return (0);
 	ft_memset(cmd, 0, sizeof(t_cmd));
-	while (args[i])
+	while (args[i] && ft_strncmp(args[i], "|", ft_strlen(args[i])))
 	{
-		printf("arg %s\n", args[i]);
+		j = 0;
 		if (!ft_strncmp(args[i], ">", ft_strlen(args[i])))
 		{
 			init_redir(&cmd, &args[i], 1);
@@ -438,21 +506,30 @@ static t_cmd	*fill_cmd(t_cmd **pipe, char **args, int i)
 			init_redir(&cmd, &args[i], 4);
 			i += 2;
 		}
-		else if (!ft_strncmp(args[i], "|", ft_strlen(args[i])))
+		else if (!cmd->cmd)
 		{
-			ft_lstadd_back_bis(pipe, fill_cmd(pipe, &args[i + 1], i++));
-			i += 2;
-		}
-		else
-		{
+			j = 0;
 			get_cmd(&cmd, &args[i]);
 			while (cmd->cmd[j])
 			{
 				i++;
 				j++;
 			}
+			ft_lstadd_back_bis(pipe, cmd);
+		}
+		else if (cmd->cmd)
+		{
+			j = 0;
+			add_arg(&cmd, &args[i]);
+			print_struct(cmd);
+			while (args[i] && ft_strncmp(args[i], ">", 1) && ft_strncmp(args[i], ">>", 2)
+				&& ft_strncmp(args[i], "<", 1) && ft_strncmp(args[i], "<<", 2)
+				&& ft_strncmp(args[i], "|", 1))
+				i++;
 		}
 	}
+	if (args[i] && !ft_strncmp(args[i], "|", ft_strlen(args[i])))
+		fill_cmd(pipe, &args[i + 1]);
 	return (cmd);
 }
 
@@ -476,9 +553,8 @@ static t_cmd	*check_line(char *line, t_cmd **pipe)
 	printf("\n");
 	if(!check_syntax(args, size))
 		return (0);
-	return (fill_cmd(pipe, args, 0));
+	return (fill_cmd(pipe, args));
 }
-
 
 int	main(int ac, char **av, char **envp)
 {
