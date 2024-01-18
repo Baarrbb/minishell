@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:36:10 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 00:50:28 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 01:04:05 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,24 @@ static int	check_quote(char *line)
 	return (1);
 }
 
+static int	get_next_quote(char *line, int i)
+{
+	if (line[i] == '\'' && line[i])
+	{
+		i++;
+		while (line[i] != '\'')
+			i++;
+	}
+	if (line[i] == '\"' && line[i])
+	{
+		i++;
+		while (line[i] != '\"' && line[i])
+			i++;
+	}
+	i++;
+	return (i);
+}
+
 static int	get_nb_args(char *line)
 {
 	int	i;
@@ -72,21 +90,7 @@ static int	get_nb_args(char *line)
 		while (is_space(line[i]) && line[i])
 			i++;
 		while (!is_space(line[i]) && !is_spe_char(line[i]) && line[i])
-		{
-			if (line[i] == '\'' && line[i])
-			{
-				i++;
-				while (line[i] != '\'')
-					i++;
-			}
-			if (line[i] == '\"' && line[i])
-			{
-				i++;
-				while (line[i] != '\"' && line[i])
-					i++;
-			}
-			i++;
-		}
+			i = get_next_quote(line, i);
 		if (i - 1 >= 0 && !is_space(line[i - 1]) && !is_spe_char(line[i - 1]))
 			count++;
 		if (is_spe_char(line[i]))
@@ -101,6 +105,7 @@ static int	get_nb_args(char *line)
 	return (count);
 }
 
+// cat test > ">> out|" | test 1 "@ #" >>>>> >> > <
 static char	**fill_args(char **args, char *line)
 {
 	int		i;
@@ -113,21 +118,7 @@ static char	**fill_args(char **args, char *line)
 		while (is_space(*line) && *line)
 			line++;
 		while (!is_space(line[i]) && !is_spe_char(line[i]) && line[i])
-		{
-			if (line[i] == '\'' && line[i])
-			{
-				i++;
-				while (line[i] != '\'')
-					i++;
-			}
-			if (line[i] == '\"' && line[i])
-			{
-				i++;
-				while (line[i] != '\"' && line[i])
-					i++;
-			}
-			i++;
-		}
+			i = get_next_quote(line, i);
 		if (i != 0)
 		{
 			args[j] = ft_substr(line, 0, i);
@@ -145,11 +136,12 @@ static char	**fill_args(char **args, char *line)
 			j++;
 			line += i;
 			i = 0;
-			continue ;
 		}
 	}
 	return (args);
 }
+
+
 
 /**
 * Partie liste chainee et redirection
@@ -401,6 +393,12 @@ t_cmd	*check_line(char *line, t_cmd **pipe, char **envp)
 	if (!args)
 		return (0);
 	fill_args(args, line);
+	
+	printf("NB ARGS %d\n", size);
+	for(int i = 0; args[i]; i++)
+		printf(".%s.\n", args[i]);
+
+
 	if(!check_syntax(args, size))
 		return (0);
 	return(fill_struct(pipe, args, envp));
