@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 00:07:33 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 00:20:23 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 15:53:52 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,5 +35,6 @@ int	main(int ac, char **av, char **envp)
 		free_list(&pipe);
 		free(line);
 	}
+	free_char_tab(cpy_env);
 	return (0);
 }

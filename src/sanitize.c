@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/30 18:33:59 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 00:24:27 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 15:56:37 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ void	free_char_tab(char **tab)
 static void	free_redir(t_redir **redir)
 {
 	t_redir	*tmp;
+
 	if (redir)
 	{
 		while (*redir)

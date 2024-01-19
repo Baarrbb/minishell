@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 00:08:30 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 00:12:56 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 15:56:21 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	print_redir(t_redir *redir)
 {
 	if (redir)
 	{
-		for (int i = 0; redir; i++)
+		while (redir)
 		{
 			printf("out %d end %d\n", redir->out, redir->out_end);
 			printf("in %d read %d\n", redir->in, redir->in_read);
@@ -28,6 +28,8 @@ void	print_redir(t_redir *redir)
 
 void	print_struct(t_cmd *cmd)
 {
+	int	i;
+
 	if (!cmd)
 	{
 		printf("NULL\n");
@@ -35,7 +37,8 @@ void	print_struct(t_cmd *cmd)
 	}
 	if (cmd->cmd)
 	{
-		for (int i = 0; cmd->cmd[i]; i++)
+		i = -1;
+		while (cmd->cmd[++i])
 		{
 			if (i == 0)
 				printf("\ncmd : .%s.\n", cmd->cmd[i]);
@@ -48,9 +51,7 @@ void	print_struct(t_cmd *cmd)
 	printf("Is that a builtin : %d\n", cmd->builtin);
 	printf("Cmd path : %s\n", cmd->path_cmd);
 	if (cmd->redir)
-	{
 		print_redir(cmd->redir);
-	}
 }
 
 void	print_linked_list(t_cmd *pipe)

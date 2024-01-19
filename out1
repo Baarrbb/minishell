@@ -106,8 +106,3 @@ out2 = arg de cat et out6 creer avecx sortie cat
 cat test >> out >> out | grep -e -w "lala"
 
 cat test > ">> out|" | test 1 "@ #" >>>>> >> > <
-
-
-
-
-cat test > out1 lala > out5 >> oiro << sf
