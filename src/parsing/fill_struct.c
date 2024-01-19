@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 17:01:53 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 17:04:00 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 18:11:27 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 	return (0);
 }
 
-t_cmd	*fill_struct(t_cmd **pipe, char **args, char **envp)
+void	fill_struct(t_cmd **pipe, char **args, char **envp)
 {
 	t_cmd	*tmp;
 
@@ -99,5 +99,4 @@ t_cmd	*fill_struct(t_cmd **pipe, char **args, char **envp)
 		tmp = tmp->next;
 	}
 	free_char_tab(args);
-	return (*pipe);
 }

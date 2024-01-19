@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:36:10 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 17:20:16 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 18:12:17 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ static char	**fill_args(char **args, char *line)
 	return (args);
 }
 
-t_cmd	*check_line(char *line, t_cmd **pipe, char **envp)
+void	check_line(char *line, t_cmd **pipe, char **envp)
 {
 	char	**args;
 	int		size;
@@ -123,14 +123,17 @@ t_cmd	*check_line(char *line, t_cmd **pipe, char **envp)
 	if (!check_quote(line))
 	{
 		printf("minishell: syntax error quote expected\n");
-		return (0);
+		return ;
 	}
 	size = get_nb_args(line);
+	if (!size)
+		return ;
 	args = ft_calloc(size + 1, sizeof(char *));
 	if (!args)
-		return (0);
+		return ;
 	fill_args(args, line);
 	if (!check_syntax(args, size))
-		return (0);
-	return (fill_struct(pipe, args, envp));
+		return (free_char_tab(args));
+	fill_struct(pipe, args, envp);
+	free(line);
 }

@@ -6,11 +6,18 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/30 18:33:59 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 15:56:37 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 18:02:52 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+// void	free_tab_and_list(char **tab, t_cmd **lst)
+// {
+// 	free_char_tab(tab);
+// 	free_list(lst);
+// 	
+// }
 
 void	free_char_tab(char **tab)
 {
