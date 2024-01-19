@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/19 23:20:29 by bsuc              #+#    #+#             */
-/*   Updated: 2023/11/21 15:11:42 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 18:23:32 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,8 @@ char	**ft_split(const char *s, char c)
 	if (!s)
 		return (NULL);
 	count = count_words((char *)s, c);
+	if (count == 0)
+		return (NULL);
 	split = (char **)malloc((count + 1) * sizeof(char *));
 	if (!split)
 		return (NULL);

@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 17:05:13 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 17:21:40 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 19:05:47 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,13 @@ static int	fill_cmd_cmd(t_cmd **cmd, t_cmd ***pipe, char **args, int i)
 
 	j = -1;
 	get_cmd(cmd, &args[i]);
-	while ((*cmd)->cmd[++j])
-		i++;
-	ft_lstadd_back_bis(*pipe, *cmd);
+	if (*cmd && (*cmd)->cmd)
+	{
+		while ((*cmd)->cmd[++j])
+			i++;
+	}
+	if (*cmd)
+		ft_lstadd_back_bis(*pipe, *cmd);
 	return (i);
 }
 

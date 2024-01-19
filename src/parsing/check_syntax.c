@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 00:44:01 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 00:50:13 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 18:38:30 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,22 +69,26 @@ static int	check_syntax_redir(char **args)
 
 static int	check_syntax_pipe(char **args, int size)
 {
-	if (args[0][0] == '|' && args[0][1] == '|')
+	if (*args && args[0])
 	{
-		printf("%s`||\'\n", ERROR_MSG);
-		return (0);
+		if (args[0][0] == '|' && args[0][1] == '|')
+		{
+			printf("%s`||\'\n", ERROR_MSG);
+			return (0);
+		}
+		else if (args[0][0] == '|')
+		{
+			printf("%s`|\'\n", ERROR_MSG);
+			return (0);
+		}
+		else if (args[size - 1][0] == '|')
+		{
+			printf("%s`|\'\n", ERROR_MSG);
+			return (0);
+		}
+		return (1);
 	}
-	else if (args[0][0] == '|')
-	{
-		printf("%s`|\'\n", ERROR_MSG);
-		return (0);
-	}
-	else if (args[size - 1][0] == '|')
-	{
-		printf("%s`|\'\n", ERROR_MSG);
-		return (0);
-	}
-	return (1);
+	return (0);
 }
 
 int	check_syntax(char **args, int size)

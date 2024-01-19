@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 17:01:53 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 18:11:27 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 19:03:52 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,11 @@ static char	**get_path(char **envp)
 		if (!ft_strncmp(envp[i], "PATH", 4))
 		{
 			del_path = ft_split(envp[i], '=');
+			if (!del_path)
+				return (0);
 			path = ft_split(del_path[1], ':');
+			if (!path)
+				return (free_char_tab(del_path), NULL);
 			break ;
 		}
 	}
@@ -68,6 +72,8 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 	full_cmd = 0;
 	i = -1;
 	wo_param = ft_split(cmd1, ' ');
+	if (!wo_param)
+		return (0);
 	while (cmd->path[++i])
 	{
 		full_cmd = strjoin(full_cmd, cmd->path[i]);
@@ -81,8 +87,7 @@ static char	*check_exist_cmd(char *cmd1, t_cmd *cmd)
 		free(full_cmd);
 		full_cmd = 0;
 	}
-	free_char_tab(wo_param);
-	return (0);
+	return (free_char_tab(wo_param), NULL);
 }
 
 void	fill_struct(t_cmd **pipe, char **args, char **envp)
