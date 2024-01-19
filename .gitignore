@@ -2,3 +2,8 @@ minishell
 *.o
 *.a
 a.out
+test
+readline.supp
+syntax_error,pdf
+en.minishell.pdf
+Minishell Map - GitHub @vietdu91 @QnYosa - Feuille 1.pdf
