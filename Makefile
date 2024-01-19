@@ -6,17 +6,22 @@
 #    By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/29 23:25:19 by bsuc              #+#    #+#              #
-#    Updated: 2024/01/19 00:46:50 by bsuc             ###   ########.fr        #
+#    Updated: 2024/01/19 17:32:37 by bsuc             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRC = src/minishell.c src/parsing.c src/sanitize.c src/manage_list.c \
-	src/parsing_utils.c src/print.c src/check_syntax.c
+SRC = src/minishell.c \
+	src/parsing/check_syntax.c src/parsing/fill_cmd.c \
+	src/parsing/fill_redir.c src/parsing/fill_struct.c \
+	src/parsing/manage_list.c src/parsing/parsing_utils.c \
+	src/parsing/parsing.c \
+	src/copy_envp.c src/sanitize.c src/print.c
+# src/builtins/cd.c src/builtins/env.c src/builtins/export.c 
 OBJ = $(SRC:.c=.o)
 NAME = minishell
 RM = rm -f
 CC = cc
-CFLAGS = -Wall -Wextra -g #-Werror
+CFLAGS = -Wall -Wextra -Werror -g
 LIBFT = libft/libft.a
 INC = -I./headers
 
@@ -42,10 +47,4 @@ fclean : clean
 re : fclean all
 
 val : all
-	valgrind --leak-check=full --track-origins=yes ./minishell
-
-obj_test :
-	$(CC) $(CFLAGS) $(INC) -c test7.c -o test.o
-
-test : start obj_test
-	$(CC) $(CFLAGS) test.o $(LIBFT) -lreadline
+	valgrind --suppressions=readline.supp --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./minishell

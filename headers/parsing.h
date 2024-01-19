@@ -6,24 +6,21 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 17:19:40 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 17:23:39 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PARSING_H
 # define PARSING_H
 
-#include "minishell.h"
-#include <asm-generic/errno-base.h> // pour les erreurs chdri  normalement dans unistd.h mais chez moi trouve pas 
-
+# include "minishell.h"
 # define ERROR_MSG "minishell: syntax error near unexpected token "
-
 
 /* PARSING_C */
 t_cmd	*check_line(char *line, t_cmd **pipe, char **envp);
 
 /* FILL_REDIR_C */
-int	is_redir(t_cmd **cmd, char **args, int i);
+int		is_redir(t_cmd **cmd, char **args, int i);
 
 /* FILL_CMD_C */
 void	fill_cmd(t_cmd **pipe, char **args);
