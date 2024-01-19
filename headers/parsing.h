@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 17:10:01 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 17:19:40 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,11 @@
 # define ERROR_MSG "minishell: syntax error near unexpected token "
 
 
+/* PARSING_C */
 t_cmd	*check_line(char *line, t_cmd **pipe, char **envp);
 
-
+/* FILL_REDIR_C */
+int	is_redir(t_cmd **cmd, char **args, int i);
 
 /* FILL_CMD_C */
 void	fill_cmd(t_cmd **pipe, char **args);
@@ -35,7 +37,7 @@ int		check_syntax(char **args, int size);
 /* PARSING_UTILS_C */
 char	*strjoin(char *dst, char *s);
 int		is_space(int c);
-int		is_spe_char(int c)
+int		is_spe_char(int c);
 
 /* COPY_ENV_C */
 char	**copy_env(char **envp);

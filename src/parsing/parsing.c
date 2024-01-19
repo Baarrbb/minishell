@@ -6,17 +6,11 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/18 16:36:10 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 17:15:30 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 17:20:16 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-/**
- * Partie je fais un double tableau en separant les mots des tokens
- * et verification syntaxe
-*/
-
 
 static int	check_quote(char *line)
 {
@@ -96,7 +90,7 @@ static char	**fill_args(char **args, char *line)
 {
 	int	i;
 	int	j;
-	
+
 	i = 0;
 	j = 0;
 	while (*line)
@@ -121,10 +115,6 @@ static char	**fill_args(char **args, char *line)
 	return (args);
 }
 
-
-
-
-
 t_cmd	*check_line(char *line, t_cmd **pipe, char **envp)
 {
 	char	**args;
@@ -140,7 +130,7 @@ t_cmd	*check_line(char *line, t_cmd **pipe, char **envp)
 	if (!args)
 		return (0);
 	fill_args(args, line);
-	if(!check_syntax(args, size))
+	if (!check_syntax(args, size))
 		return (0);
-	return(fill_struct(pipe, args, envp));
+	return (fill_struct(pipe, args, envp));
 }

@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 17:15:17 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 17:15:32 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 17:16:32 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ static void	init_redir(t_cmd **cmd, char **args, int type)
 	(*cmd)->redir = redir;
 }
 
-static int	is_redir(t_cmd **cmd, char **args, int i)
+int	is_redir(t_cmd **cmd, char **args, int i)
 {
 	if (!ft_strncmp(args[i], ">", ft_strlen(args[i])))
 	{

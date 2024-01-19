@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 17:05:13 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 17:07:00 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 17:21:40 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,17 +19,15 @@ static void	get_cmd(t_cmd **cmd, char **args)
 
 	nb_args = 0;
 	i = -1;
-	while (args[++i] && ft_strncmp(args[i], ">", 1) && ft_strncmp(args[i], ">>", 2)
-		&& ft_strncmp(args[i], "<", 1) && ft_strncmp(args[i], "<<", 2)
-		&& ft_strncmp(args[i], "|", 1))
+	while (args[++i] && args[i][0] != '>' && args[i][0] != '<'
+		&& args[i][0] != '|')
 		nb_args++;
 	(*cmd)->cmd = ft_calloc(nb_args + 1, sizeof(char *));
 	if (!(*cmd)->cmd)
 		return ;
 	i = -1;
-	while (args[++i] && ft_strncmp(args[i], ">", 1) && ft_strncmp(args[i], ">>", 2)
-		&& ft_strncmp(args[i], "<", 1) && ft_strncmp(args[i], "<<", 2)
-		&& ft_strncmp(args[i], "|", 1))
+	while (args[++i] && args[i][0] != '>' && args[i][0] != '<'
+		&& args[i][0] != '|')
 		(*cmd)->cmd[i] = ft_strdup(args[i]);
 }
 
