@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 00:07:33 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 18:21:06 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 19:43:29 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ int	main(int ac, char **av, char **envp)
 		line = readline("Minishell $ ");
 		rl_on_new_line();
 		if (!line)
-			return 0;
+			return (0);
 		if (line[0] != ' ' && line[0] != 0)
 			add_history(line);
 		check_line(line, &pipe, cpy_env);

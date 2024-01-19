@@ -6,7 +6,7 @@
 /*   By: bsuc <bsuc@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 17:05:13 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/19 19:05:47 by bsuc             ###   ########.fr       */
+/*   Updated: 2024/01/19 19:43:45 by bsuc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ static void	get_cmd(t_cmd **cmd, char **args)
 	(*cmd)->cmd = ft_calloc(nb_args + 1, sizeof(char *));
 	if (!(*cmd)->cmd)
 		return ;
+	ft_memset((*cmd)->cmd, 0, sizeof(char *));
 	i = -1;
 	while (args[++i] && args[i][0] != '>' && args[i][0] != '<'
 		&& args[i][0] != '|')
@@ -69,6 +70,8 @@ static int	fill_cmd_cmd(t_cmd **cmd, t_cmd ***pipe, char **args, int i)
 		while ((*cmd)->cmd[++j])
 			i++;
 	}
+	else
+		return (i);
 	if (*cmd)
 		ft_lstadd_back_bis(*pipe, *cmd);
 	return (i);
