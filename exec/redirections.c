@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 16:27:29 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/16 17:11:00 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/18 15:35:13 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void	redirections_pipe_out(t_exec *data)
 	}
 }
 
-void	redirections_out(t_cmd *cmd)
+int	redirections_out(t_cmd *cmd)
 {
 	t_redir	*oldredir;
 	int		fd;
@@ -84,8 +84,10 @@ void	redirections_out(t_cmd *cmd)
 			cmd->redir = cmd->redir->next;
 		}
 		dup2(fd, 1);
-		if (fd > 2)
-			close(fd);
+		//if (fd > 2)
+			//close(fd);
 		cmd->redir = oldredir;
+		return (fd);
 	}
+	return (0);
 }

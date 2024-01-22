@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 22:27:19 by bsuc              #+#    #+#             */
-/*   Updated: 2024/01/16 18:54:41 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/18 15:26:46 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ int		handle_var(t_cmd *cmd, char **our_envp, char *sortie);
 void	redirections_pipe_in(t_cmd *command, t_exec *data);
 void	redirections_in(t_cmd *cmd);
 void	redirections_pipe_out(t_exec *data);
-void	redirections_out(t_cmd *cmd);
+int		redirections_out(t_cmd *cmd);
 /*pipes opening and closing*/
 void	close_all_pipes(int numPipes, int *pipefds);
 int		numbers_pipe(t_cmd *list);
