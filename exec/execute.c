@@ -6,7 +6,7 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 11:53:56 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/18 15:22:13 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/23 15:45:34 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,9 @@ static void	exec(t_cmd *command, t_exec *yipi, char **envp)
 	if (yipi->pid[yipi->index] == 0)
 	{
 		sig_default();
-		redirections_pipe_in(command, yipi);
+		redirections_pipe_out(command, yipi);
 		redirections_out(command);
-		redirections_pipe_out(yipi);
+		redirections_pipe_in(yipi);
 		redirections_in(command);
 		close_all_pipes(yipi->numpipes, yipi->pipefds);
 		error_managing(command);
@@ -87,7 +87,6 @@ static int	handle_waitpid(t_cmd *pipe, t_exec *yipi)
 		{
 			perror("waitpid error");
 			break ;
-			// Gérer l'erreur de manière appropriée
 		}
 		pipe->exit_val = wait_result;
 		yipi->index++;

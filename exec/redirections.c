@@ -6,13 +6,13 @@
 /*   By: ytouihar <ytouihar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 16:27:29 by ytouihar          #+#    #+#             */
-/*   Updated: 2024/01/18 15:35:13 by ytouihar         ###   ########.fr       */
+/*   Updated: 2024/01/23 15:43:51 by ytouihar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parsing.h"
 
-void	redirections_pipe_in(t_cmd *command, t_exec *data)
+void	redirections_pipe_out(t_cmd *command, t_exec *data)
 {
 	if (command->next)
 	{
@@ -52,7 +52,7 @@ void	redirections_in(t_cmd *cmd)
 	}
 }
 
-void	redirections_pipe_out(t_exec *data)
+void	redirections_pipe_in(t_exec *data)
 {
 	if (data->index != 0)
 	{
